@@ -1,0 +1,45 @@
+plugins {
+    id "io.spring.dependency-management" version "1.0.8.RELEASE"
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'java-library'
+    group = 'wafec.testing'
+    repositories {
+        jcenter()
+    }
+    dependencyManagement {
+        imports {
+            mavenBom("org.springframework.boot:spring-boot-dependencies:2.1.7.RELEASE")
+        }
+    }
+    dependencies {
+        implementation 'com.google.guava:guava:28.0-jre'
+        compileOnly 'org.projectlombok:lombok:1.18.12'
+        annotationProcessor 'org.projectlombok:lombok:1.18.12'
+        testCompileOnly 'org.projectlombok:lombok:1.18.12'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+        testImplementation 'junit:junit:4.12'
+    }
+}
+
+project(':java-openstack-testing-execution') {
+    dependencies {
+        implementation project(':java-testing-execution')
+        implementation project(':java-openstack-testing-driver-rest-client')
+    }
+}
+
+project(':java-testing-execution-app') {
+    apply plugin: 'application'
+    dependencies {
+        implementation project(':java-testing-execution')
+        implementation project(':java-openstack-testing-execution')
+        implementation project(':java-openstack-testing-driver-rest-client')
+    }
+    application {
+        mainClassName = "wafec.testing.execution.app.App"
+    }
+}

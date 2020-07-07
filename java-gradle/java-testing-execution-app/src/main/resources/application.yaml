@@ -1,0 +1,8 @@
+flavors:
+  url: "http://localhost:5000/api/nova/flavors/"
+images:
+  url: "http://localhost:5000/api/glance/images/"
+servers:
+  url: "http://localhost:5000/api/nova/servers/"
+volumes:
+  url: "http://localhost:5000/api/cinder/volumes/"

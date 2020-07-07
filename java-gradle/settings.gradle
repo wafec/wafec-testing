@@ -1,0 +1,5 @@
+rootProject.name = 'wafec-testing-java-gradle'
+include 'java-testing-execution'
+include 'java-openstack-testing-execution'
+include 'java-openstack-testing-driver-rest-client'
+include 'java-testing-execution-app'

@@ -1,0 +1,24 @@
+---
+import-id: 1
+test-case:
+  description: "Nova Test"
+  target-system: "OpenStack, Nova"
+  test-inputs:
+  - name: "keyCreate"
+    signature: null
+    test-args:
+    - name: "username"
+      value: "admin"
+      type: "string"
+    - name: "password"
+      value: "supersecret"
+      type: "secret"
+    - name: "user_domain_name"
+      value: "Default"
+      type: "string"
+    - name: "project_name"
+      value: "admin"
+      type: "string"
+    - name: "project_domain_name"
+      value: "Default"
+      type: "string"

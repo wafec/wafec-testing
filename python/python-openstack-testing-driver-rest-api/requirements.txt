@@ -1,0 +1,7 @@
+flask
+sqlalchemy
+PyMySQL
+python-openstackclient
+python-glanceclient
+python-neutronclient
+python-novaclient
