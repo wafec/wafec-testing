@@ -28,7 +28,6 @@ public class TestingImport implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        System.out.println(replace);
         for (File file : files)
             testImportService.importTest(file, replace);
         return 0;

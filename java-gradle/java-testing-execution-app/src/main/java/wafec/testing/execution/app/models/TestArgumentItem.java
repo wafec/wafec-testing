@@ -9,6 +9,6 @@ import lombok.ToString;
 public class TestArgumentItem {
     private String name;
     private String value;
-    @JsonProperty(value = "type")
+    @JsonProperty(value = "type", defaultValue = "string")
     private String argType = "string";
 }
