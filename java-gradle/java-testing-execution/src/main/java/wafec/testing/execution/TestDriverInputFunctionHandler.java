@@ -1,8 +1,6 @@
 package wafec.testing.execution;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
@@ -11,4 +9,5 @@ public class TestDriverInputFunctionHandler {
     private TestData testData;
     private TestInput testInput;
     private TestExecution testExecution;
+    private TestDriverContext testDriverContext;
 }

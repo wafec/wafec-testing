@@ -18,4 +18,12 @@ public class TestData {
         }
         throw new TestDataValueNotFoundException(name);
     }
+
+    public Optional<String> getValueOpt(String name) throws TestDataValueNotFoundException {
+        return get(name).map(TestDataValue::getValue);
+    }
+
+    public String getValue(String name) throws TestDataValueNotFoundException {
+        return getValueOpt(name).orElseThrow(IllegalArgumentException::new);
+    }
 }

@@ -10,7 +10,7 @@ import java.util.Date;
 @Table(name = "TEST_CASE")
 public class TestCase {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "native")
     private long id;
     @Column(name = "target_system")
     private String targetSystem;

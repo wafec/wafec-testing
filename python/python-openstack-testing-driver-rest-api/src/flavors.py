@@ -1,6 +1,8 @@
 from flask import Blueprint, jsonify, request, abort
 import commons
 import mappers
+import errors
+from novaclient.exceptions import BadRequest, Conflict
 
 flavors_api = Blueprint('flavors', __name__)
 
@@ -20,6 +22,8 @@ def get():
 def get_by_id(id):
     nova = commons.nova_client(request.args.get('key'))
     flavor = nova.flavors.find(id=id)
+    if not flavor:
+        return errors.http_notfound()
     return jsonify(mappers.flavor_to_view(flavor)), 201
 
 
@@ -39,3 +43,13 @@ def delete(id):
     flavor = nova.flavors.find(id=id)
     nova.flavors.delete(flavor)
     return jsonify(success=True)
+
+
+@flavors_api.errorhandler(Conflict)
+@flavors_api.errorhandler(BadRequest)
+def client_error(e):
+    response = jsonify({
+        'message': str(e)
+    })
+    response.status_code = 400
+    return response

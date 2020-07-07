@@ -15,10 +15,12 @@ import javax.persistence.*;
 @Table(name = "TEST_INPUT_PARAMETER_DATA")
 public class TestInputParameterData {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "native")
     private long id;
     @ManyToOne()
     @JoinColumn(columnDefinition = "test_input_parameter_id", referencedColumnName = "id")
     private TestInputParameter testInputParameter;
+    @Lob
+    @Column(name = "data", length = 50000)
     private String data;
 }

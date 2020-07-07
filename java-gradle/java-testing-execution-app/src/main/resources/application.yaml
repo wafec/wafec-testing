@@ -6,3 +6,5 @@ servers:
   url: "http://localhost:5000/api/nova/servers/"
 volumes:
   url: "http://localhost:5000/api/cinder/volumes/"
+networks:
+  url: "http://localhost:5000/api/neutron/networks/"

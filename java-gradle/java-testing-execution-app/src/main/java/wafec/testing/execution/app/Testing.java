@@ -5,7 +5,8 @@ import picocli.CommandLine.*;
 
 @Command(name = "testing", subcommands = {
         TestingImport.class,
-        TestingExecution.class
+        TestingExecution.class,
+        TestingClear.class
 })
 @Component
 public class Testing {

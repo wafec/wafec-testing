@@ -10,7 +10,7 @@ import java.util.Optional;
 @Table(name = "TEST_INPUT")
 public class TestInput implements InputSignature {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "native")
     private long id;
     private int position;
     @ManyToOne

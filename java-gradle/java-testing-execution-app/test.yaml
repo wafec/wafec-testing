@@ -1,5 +1,5 @@
 ---
-import-id: 25
+import-id: 2
 test-case:
   description: "Nova Test"
   target-system: "OpenStack, Nova"
@@ -22,6 +22,9 @@ test-case:
     - name: "project_domain_name"
       value: "Default"
       type: "string"
+    - name: "auth_url"
+      value: "http://controller:5000/v3/"
+      type: "string"
   - name: "flavorCreate"
     signature: "flavorCreate"
     test-args:
@@ -30,4 +33,10 @@ test-case:
       type: "string"
     - name: "ram"
       value: "256"
+      type: "string"
+    - name: "vcpus"
+      value: "1"
+      type: "string"
+    - name: "disk"
+      value: "1"
       type: "string"

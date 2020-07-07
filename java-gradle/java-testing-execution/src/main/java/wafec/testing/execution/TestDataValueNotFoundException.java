@@ -7,4 +7,9 @@ import lombok.Getter;
 public class TestDataValueNotFoundException extends Exception {
     @Getter
     private String name;
+
+    @Override
+    public String toString() {
+        return String.format("Could not retrieve data from %s variable", name);
+    }
 }

@@ -7,7 +7,7 @@ Base = declarative_base()
 
 
 class Key(Base):
-    __tablename__ = 'KEY'
+    __tablename__ = 'PASS_KEY'
 
     id = Column(Integer, primary_key=True)
     username = Column(String)

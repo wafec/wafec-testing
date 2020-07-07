@@ -10,10 +10,12 @@ import java.util.Date;
 @Table(name = "TEST_OUTPUT")
 public class TestOutput {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "native")
     private long id;
     @Column(name = "created_at")
     private Date createdAt;
+    @Lob
+    @Column(name = "output", length = 50000)
     private String output;
     private String source;
     @Column(name = "source_type")

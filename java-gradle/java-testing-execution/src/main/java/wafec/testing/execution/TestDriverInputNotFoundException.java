@@ -7,4 +7,9 @@ import lombok.Getter;
 public class TestDriverInputNotFoundException extends Exception {
     @Getter
     private String signature;
+
+    @Override
+    public String toString() {
+        return String.format("Input of signature '%s' not found", signature);
+    }
 }

@@ -10,7 +10,7 @@ import java.util.Date;
 @Table(name = "TEST_EXECUTION")
 public class TestExecution {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "native")
     private long id;
     @Column(name = "start_time")
     private Date startTime;

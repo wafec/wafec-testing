@@ -12,7 +12,7 @@ import javax.persistence.*;
 @Table(name = "TEST_INPUT_PARAMETER")
 public class TestInputParameter {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "native")
     private long id;
     @ManyToOne()
     @JoinColumn(columnDefinition = "test_input_id", referencedColumnName = "id")

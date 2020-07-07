@@ -9,7 +9,7 @@ import javax.persistence.*;
 @Table(name = "TEST_INPUT_EXPECTED_OUTPUT")
 public class TestInputExpectedOutput {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "native")
     private long id;
     @ManyToOne
     @JoinColumn(columnDefinition = "test_input_id", referencedColumnName = "id")

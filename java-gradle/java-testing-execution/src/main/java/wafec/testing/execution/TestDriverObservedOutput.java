@@ -28,6 +28,10 @@ public class TestDriverObservedOutput {
     }
 
     public static TestDriverObservedOutput success(String source) {
-        return TestDriverObservedOutput.of("success", source, source);
+        return TestDriverObservedOutput.of("success", source, "success");
+    }
+
+    public static TestDriverObservedOutput error(String source, String message) {
+        return TestDriverObservedOutput.of(message, source, "error");
     }
 }

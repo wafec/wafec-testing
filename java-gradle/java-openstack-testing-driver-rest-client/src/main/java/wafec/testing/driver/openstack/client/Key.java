@@ -13,7 +13,8 @@ import java.util.Base64;
 @Table(name = "PASS_KEY")
 public class Key {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "assigned")
+    @Column(name = "id", insertable = true, updatable = true, unique = true, nullable = false)
     private long id;
     @Column(name = "auth_url")
     @NonNull private String authUrl;
@@ -26,8 +27,4 @@ public class Key {
     @NonNull private String projectDomainName;
     @Column(name = "project_name")
     @NonNull private String projectName;
-
-    public String getBase64Id() {
-        return Base64.getEncoder().encodeToString(String.format("%d", id).getBytes());
-    }
 }
