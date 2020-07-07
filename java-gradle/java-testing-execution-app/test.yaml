@@ -1,11 +1,11 @@
 ---
-import-id: 1
+import-id: 25
 test-case:
   description: "Nova Test"
   target-system: "OpenStack, Nova"
   test-inputs:
   - name: "keyCreate"
-    signature: null
+    signature: "keyCreate"
     test-args:
     - name: "username"
       value: "admin"
@@ -21,4 +21,13 @@ test-case:
       type: "string"
     - name: "project_domain_name"
       value: "Default"
+      type: "string"
+  - name: "flavorCreate"
+    signature: "flavorCreate"
+    test-args:
+    - name: "name"
+      value: "flavorTest"
+      type: "string"
+    - name: "ram"
+      value: "256"
       type: "string"

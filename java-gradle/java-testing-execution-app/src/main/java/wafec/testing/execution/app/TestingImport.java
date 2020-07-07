@@ -18,8 +18,11 @@ import java.util.concurrent.Callable;
 @Command(name = "import")
 @Component
 public class TestingImport implements Callable<Integer> {
+    @Option(names = { "-r", "--replace" }, defaultValue = "false", negatable = true)
+    private boolean replace;
     @Parameters(paramLabel = "FILE")
     private File[] files;
+
     @Autowired
     private TestCaseRepository testCaseRepository;
     @Autowired
@@ -49,11 +52,34 @@ public class TestingImport implements Callable<Integer> {
 
     @Transactional
     private void save(TestCaseImportModel model) throws Exception {
-        if (model.getImportId() == null) {
+        if (model.getImportId() != null && replace) {
+            remove(model);
+        }
+        if (model.getImportId() == null || replace) {
             var testCaseItem = Optional.of(model).map(TestCaseImportModel::getTestCase).get();
             var importId = save(testCaseItem);
             model.setImportId(importId);
             model.save();
+        }
+    }
+
+    private void remove(TestCaseImportModel model) {
+        Optional<TestCase> testCaseOpt = testCaseRepository.findById(model.getImportId());
+        if (testCaseOpt.isPresent()) {
+            var testCase = testCaseOpt.get();
+            var testInputs = testInputRepository.findByTestCase(testCase);
+            var testParameters = testInputParameterRepository.findByTestCase(testCase);
+            var testParameterDataList = testInputParameterDataRepository.findByTestCase(testCase);
+            for (var data : testParameterDataList) {
+                testInputParameterDataRepository.delete(data);
+            }
+            for (var parameter : testParameters) {
+                testInputParameterRepository.delete(parameter);
+            }
+            for (var testInput : testInputs) {
+                testInputRepository.delete(testInput);
+            }
+            testCaseRepository.delete(testCase);
         }
     }
 
@@ -62,7 +88,6 @@ public class TestingImport implements Callable<Integer> {
         testCase.setTargetSystem(testCaseItem.getTargetSystem());
         testCase.setDescription(testCaseItem.getDescription());
         testCase.setCreatedAt(new Date());
-        System.out.println(String.format("Instance: %s", testCaseRepository));
         testCaseRepository.save(testCase);
 
         for(int i = 0; i < testCaseItem.getTestInputs().size(); i++) {

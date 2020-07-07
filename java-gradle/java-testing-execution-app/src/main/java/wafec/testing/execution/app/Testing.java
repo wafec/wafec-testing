@@ -4,7 +4,8 @@ import org.springframework.stereotype.Component;
 import picocli.CommandLine.*;
 
 @Command(name = "testing", subcommands = {
-        TestingImport.class
+        TestingImport.class,
+        TestingExecution.class
 })
 @Component
 public class Testing {
