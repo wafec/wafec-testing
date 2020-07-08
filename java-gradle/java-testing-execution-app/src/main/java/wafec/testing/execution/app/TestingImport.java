@@ -21,6 +21,8 @@ import java.util.concurrent.Callable;
 public class TestingImport implements Callable<Integer> {
     @Option(names = { "-r", "--replace" }, defaultValue = "false", negatable = true)
     private boolean replace;
+    @Option(names = { "-n", "--new" }, defaultValue = "false")
+    private boolean newInstance;
     @Parameters(paramLabel = "FILE")
     private File[] files;
     @Autowired
@@ -29,7 +31,7 @@ public class TestingImport implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         for (File file : files)
-            testImportService.importTest(file, replace);
+            testImportService.importTest(file, replace, newInstance);
         return 0;
     }
 

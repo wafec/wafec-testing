@@ -30,6 +30,7 @@ project(':java-openstack-testing-execution') {
     dependencies {
         implementation project(':java-testing-execution')
         implementation project(':java-openstack-testing-driver-rest-client')
+        implementation project(':java-testing-core')
     }
 }
 
@@ -43,4 +44,14 @@ project(':java-testing-execution-app') {
     application {
         mainClassName = "wafec.testing.execution.app.App"
     }
+}
+
+project(':java-testing-execution') {
+    dependencies {
+        implementation project(':java-testing-core')
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.warnings = false;
 }

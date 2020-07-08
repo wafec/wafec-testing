@@ -26,13 +26,15 @@ public class TestImportService {
     private TestInputParameterDataRepository testInputParameterDataRepository;
 
     private boolean replace;
+    private boolean newInstance;
 
     public void importTest(File file) {
-        importTest(file, false);
+        importTest(file, false, false);
     }
 
-    public void importTest(File file, boolean replace) {
+    public void importTest(File file, boolean replace, boolean newInstance) {
         this.replace = replace;
+        this.newInstance = newInstance;
 
         if (!file.getName().endsWith(".yaml"))
             throw new IllegalArgumentException("Required YAML file");
@@ -45,10 +47,10 @@ public class TestImportService {
     }
 
     private void save(TestCaseImportModel model) throws Exception {
-        if (model.getImportId() != null && replace) {
+        if (model.getImportId() != null && replace && !newInstance) {
             remove(model);
         }
-        if (model.getImportId() == null || replace) {
+        if (model.getImportId() == null || replace || newInstance) {
             var testCaseItem = Optional.of(model).map(TestCaseImportModel::getTestCase).get();
             var importId = save(testCaseItem);
             model.setImportId(importId);

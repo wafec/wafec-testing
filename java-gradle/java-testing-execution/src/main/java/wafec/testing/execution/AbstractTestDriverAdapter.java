@@ -19,7 +19,7 @@ public abstract class AbstractTestDriverAdapter extends AbstractTestDriver {
 
     @Override
     protected List<TestDriverObservedOutput> runTestInput(TestInput testInput, TestExecution testExecution) throws TestDriverInputNotFoundException,
-            TestDataValueNotFoundException, PreConditionViolationException {
+            TestDataValueNotFoundException, PreConditionViolationException, TestDriverException {
         var function = inputModel.get(testInput);
         var testData = testDataMapper.fromTestInput(testInput);
         List<TestDriverObservedOutput> result = new ArrayList<>();

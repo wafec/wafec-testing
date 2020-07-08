@@ -1,5 +1,5 @@
 ---
-import-id: 6
+import-id: 7
 test-case:
   description: "Nova Test"
   target-system: "OpenStack, Nova"
@@ -54,4 +54,19 @@ test-case:
       type: "string"
     - name: "data_file"
       value: "data/cirros.img"
+      type: "string"
+  - name: "serverCreate"
+    signature: "serverCreate"
+    test-args:
+    - name: "name"
+      value: "serverTest"
+      type: "string"
+    - name: "flavor"
+      value: "flavorTest"
+      type: "string"
+    - name: "image"
+      value: "imageTest"
+      type: "string"
+    - name: "network"
+      value: "provider"
       type: "string"

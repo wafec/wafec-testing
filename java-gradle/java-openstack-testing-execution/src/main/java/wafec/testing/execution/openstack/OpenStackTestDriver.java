@@ -1,5 +1,7 @@
 package wafec.testing.execution.openstack;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import wafec.testing.driver.openstack.client.*;
@@ -7,10 +9,14 @@ import wafec.testing.execution.*;
 import wafec.testing.execution.openstack.modules.NovaInputModelBuilderModule;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class OpenStackTestDriver extends AbstractTestDriverAdapter {
+    public static final String SOURCE = OpenStackTestDriver.class.getName();
     public static final String SECURED = "preConditionSecured";
+
+    Logger logger = LoggerFactory.getLogger(OpenStackTestDriver.class);
 
     @Autowired
     private KeyRepository keyRepository;
@@ -35,7 +41,7 @@ public class OpenStackTestDriver extends AbstractTestDriverAdapter {
         var key = handler.getTestDriverContext().get("key");
         if (key.isEmpty())
             throw new PreConditionViolationException("Key cannot be null");
-        return TestDriverObservedOutput.success("preCondition").asList();
+        return TestDriverObservedOutputBuilder.startBuild().success(SOURCE, "preConditionSecured").buildList();
     }
 
     private void removeKey(long keyId) {
@@ -51,7 +57,7 @@ public class OpenStackTestDriver extends AbstractTestDriverAdapter {
         removeKey(testExecution.getId());
 
         var key = new Key();
-        key.setId(testExecution.getId());
+        key.setPass(UUID.randomUUID().toString());
         key.setUsername(testData.get("username").map(TestDataValue::getValue).get());
         key.setPassword(testData.get("password").map(TestDataValue::getValue).get());
         key.setAuthUrl(testData.get("auth_url").map(TestDataValue::getValue).get());
@@ -60,8 +66,10 @@ public class OpenStackTestDriver extends AbstractTestDriverAdapter {
         key.setUserDomainName(testData.get("user_domain_name").map(TestDataValue::getValue).get());
         keyRepository.save(key);
 
-        TestDriverContextUtils.setKey(handler, key.getId());
+        logger.debug(String.format("Key created with pass %s", key.getPass()));
 
-        return TestDriverObservedOutput.none().asList();
+        TestDriverContextUtils.setKey(handler, key.getPass());
+
+        return TestDriverObservedOutputBuilder.startBuild().success(SOURCE, "keyCreate").buildList();
     }
 }

@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.List;
 
 public abstract class AbstractTestDriver {
+    public static final String SOURCE = AbstractTestDriver.class.getName();
+
     @Autowired
     private TestInputRepository testInputRepository;
     @Autowired
@@ -21,51 +23,53 @@ public abstract class AbstractTestDriver {
     protected TestDriverContext testDriverContext;
 
     public TestExecution runTest(TestCase testCase) throws TestDriverInputNotFoundException,
-            TestDataValueNotFoundException, PreConditionViolationException {
+            TestDataValueNotFoundException, PreConditionViolationException, TestDriverException {
         var testExecution = TestExecution.of(testCase);
         testExecutionRepository.save(testExecution);
         return runTest(testExecution);
     }
 
     public TestExecution runTest(TestExecution testExecution) throws TestDriverInputNotFoundException,
-            TestDataValueNotFoundException, PreConditionViolationException {
+            TestDataValueNotFoundException, PreConditionViolationException, TestDriverException {
         testDriverContext = new TestDriverContext(this);
         for (var testInput : testInputRepository.findByTestCase(testExecution.getTestCase())) {
             var testDriverObservedOutputList = tryRunTestInput(testInput, testExecution);
-            int i = 0;
-            for (var testDriverObservedOutput : testDriverObservedOutputList) {
-                var testOutput = testOutputMapper.fromTestDriverObservedOutput(testDriverObservedOutput);
-                testOutput.setCreatedAt(new Date());
-                testOutput.setPosition(i++);
-                TestExecutionObservedOutput observedOutput =
-                        TestExecutionObservedOutput.of(testExecution, testInput, testOutput);
-                testOutputRepository.save(testOutput);
-                testExecutionObservedOutputRepository.save(observedOutput);
-            }
+            saveObservedOutputs(testDriverObservedOutputList, testExecution, testInput);
         }
         testExecution.setEndTime(new Date());
         testExecutionRepository.save(testExecution);
         return testExecution;
     }
 
-    private List<TestDriverObservedOutput> tryRunTestInput(TestInput testInput, TestExecution testExecution) throws
-            TestDriverInputNotFoundException, TestDataValueNotFoundException, PreConditionViolationException {
-        try {
-            return runTestInput(testInput, testExecution);
-        } catch (Exception exc) {
-            var driverErrorOutput = TestDriverObservedOutput.error(exc.getClass().getName(), exc.getMessage());
-            var testOutput = testOutputMapper.fromTestDriverObservedOutput(driverErrorOutput);
+    private void saveObservedOutputs(List<TestDriverObservedOutput> observedOutputs, TestExecution testExecution,
+                                     TestInput testInput) {
+        int i = 0;
+        for (var testDriverObservedOutput : observedOutputs) {
+            var testOutput = testOutputMapper.fromTestDriverObservedOutput(testDriverObservedOutput);
             testOutput.setCreatedAt(new Date());
-            testOutput.setPosition(-1);
+            testOutput.setPosition(i++);
             TestExecutionObservedOutput observedOutput =
                     TestExecutionObservedOutput.of(testExecution, testInput, testOutput);
             testOutputRepository.save(testOutput);
             testExecutionObservedOutputRepository.save(observedOutput);
+        }
+    }
+
+    private List<TestDriverObservedOutput> tryRunTestInput(TestInput testInput, TestExecution testExecution) throws
+            TestDriverInputNotFoundException, TestDataValueNotFoundException, PreConditionViolationException, TestDriverException {
+        try {
+            return runTestInput(testInput, testExecution);
+        } catch (Exception exc) {
+            var builder = new TestDriverObservedOutputBuilder();
+            if (exc instanceof TestDriverException)
+                builder.join(((TestDriverException) exc).getObservedOutputsOnFail());
+            builder.and().error(SOURCE, exc);
+            saveObservedOutputs(builder.buildList(), testExecution, testInput);
             throw exc;
         }
     }
 
     protected abstract List<TestDriverObservedOutput> runTestInput(TestInput testInput, TestExecution testExecution) throws TestDriverInputNotFoundException,
-            TestDataValueNotFoundException, PreConditionViolationException;
+            TestDataValueNotFoundException, PreConditionViolationException, TestDriverException;
     public abstract List<AcceptedInput> getAcceptedInputs();
 }

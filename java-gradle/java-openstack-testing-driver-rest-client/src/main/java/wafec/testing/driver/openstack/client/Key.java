@@ -13,9 +13,11 @@ import java.util.Base64;
 @Table(name = "PASS_KEY")
 public class Key {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "assigned")
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "native")
     @Column(name = "id", insertable = true, updatable = true, unique = true, nullable = false)
     private long id;
+    @Column(unique = true, name = "pass", nullable = false)
+    private String pass;
     @Column(name = "auth_url")
     @NonNull private String authUrl;
     @NonNull private String username;

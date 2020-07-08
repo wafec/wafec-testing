@@ -8,3 +8,5 @@ volumes:
   url: "http://localhost:5000/api/cinder/volumes/"
 networks:
   url: "http://localhost:5000/api/neutron/networks/"
+hosts:
+  url: "http://localhost:5000/api/nova/hosts"
