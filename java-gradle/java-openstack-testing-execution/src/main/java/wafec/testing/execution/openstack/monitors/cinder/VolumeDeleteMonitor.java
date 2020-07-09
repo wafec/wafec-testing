@@ -1,24 +1,20 @@
-package wafec.testing.execution.openstack.monitors.nova;
+package wafec.testing.execution.openstack.monitors.cinder;
 
 import org.springframework.stereotype.Component;
 import wafec.testing.driver.openstack.client.OpenStackClientBadRequestException;
-import wafec.testing.driver.openstack.client.Server;
+import wafec.testing.driver.openstack.client.Volume;
 import wafec.testing.execution.ConditionWaitOnErrorResult;
-import wafec.testing.execution.openstack.ResourceNotFoundException;
-
-import java.util.concurrent.TimeUnit;
 
 @Component
-public class ServerDeleteMonitor extends AbstractServerMonitor {
+public class VolumeDeleteMonitor extends AbstractVolumeMonitor {
     private boolean isValid = false;
 
-    public ServerDeleteMonitor() {
+    public VolumeDeleteMonitor() {
         super();
-        timeout = TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS);
     }
 
     @Override
-    protected boolean assertTrue(Server server) {
+    protected boolean assertTrue(Volume volume) {
         return isValid;
     }
 

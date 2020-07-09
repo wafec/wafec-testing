@@ -7,7 +7,7 @@ import lombok.ToString;
 
 @Data
 @ToString
-@AllArgsConstructor
+@AllArgsConstructor(staticName = "of")
 @NoArgsConstructor
 public class Resource {
     private String id;

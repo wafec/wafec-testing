@@ -8,5 +8,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface PreCondition {
-    public String target() default "preCondition";
+    String SECURED = "preConditionSecured";
+    String DEFAULT = "preCondition";
+
+    String target() default DEFAULT;
 }

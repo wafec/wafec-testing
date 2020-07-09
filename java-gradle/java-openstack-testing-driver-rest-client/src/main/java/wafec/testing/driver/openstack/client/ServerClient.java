@@ -21,9 +21,9 @@ public interface ServerClient extends CustomOpenStackCrudClient<Server> {
     void suspend(@RequestParam("key") String key, @PathVariable("id") String id);
     @RequestMapping(value = "/{id}/actions/resume", method = RequestMethod.POST)
     void resume(@RequestParam("key") String key, @PathVariable("id") String id);
-    @RequestMapping(value = "/{id}/actions/resize", method = RequestMethod.POST)
+    @RequestMapping(value = "/{id}/actions/resize", method = RequestMethod.POST, consumes = "application/json")
     void resize(@RequestParam("key") String key, @PathVariable("id") String id, @RequestBody Resource flavor);
-    @RequestMapping(value = "/{id}/actions/resize/confirm")
+    @RequestMapping(value = "/{id}/actions/resize/confirm", method = RequestMethod.POST)
     void resizeConfirm(@RequestParam("key") String key, @PathVariable("id") String id, @RequestParam("action") String action);
     @RequestMapping(value = "/{id}/actions/migrate", method = RequestMethod.POST)
     void migrate(@RequestParam("key") String key, @PathVariable("id") String id);

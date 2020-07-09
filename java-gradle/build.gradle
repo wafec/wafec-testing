@@ -23,6 +23,7 @@ subprojects {
         testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
         testImplementation 'junit:junit:4.12'
         implementation 'org.apache.commons:commons-lang3:3.0'
+        implementation 'com.google.code.findbugs:jsr305:3.0.2'
     }
 }
 

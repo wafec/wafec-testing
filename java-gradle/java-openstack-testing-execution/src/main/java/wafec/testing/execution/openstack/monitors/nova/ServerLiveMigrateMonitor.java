@@ -7,10 +7,10 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class ServerUnshelveMonitor extends AbstractServerMonitor {
-    public ServerUnshelveMonitor() {
+public class ServerLiveMigrateMonitor extends AbstractServerMonitor {
+    public ServerLiveMigrateMonitor() {
         super();
-        timeout = TimeUnit.MILLISECONDS.convert(4, TimeUnit.MINUTES);
+        timeout = TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
     }
 
     @Override

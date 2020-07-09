@@ -40,3 +40,23 @@ def server_to_view(server):
             "task_state": str(getattr(server, 'OS-EXT-STS:task_state')),
             "vm_state": str(getattr(server, 'OS-EXT-STS:vm_state'))
     }
+
+
+def attachment_to_view(attachment):
+    return {
+        'attachment_id': attachment['attachment_id'],
+        'server_id': attachment['server_id'],
+        'host_name': attachment['host_name'],
+        'device': attachment['device']
+    }
+
+
+def volume_to_view(volume):
+    return {
+        "id": volume.id,
+        "name": volume.name,
+        "size": str(volume.size),
+        "availability_zone": volume.availability_zone,
+        "status": volume.status,
+        "attachments": list(map(lambda a: attachment_to_view(a), volume.attachments))
+    }

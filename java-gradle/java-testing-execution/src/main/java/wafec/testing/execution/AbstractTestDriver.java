@@ -32,7 +32,8 @@ public abstract class AbstractTestDriver {
     public TestExecution runTest(TestExecution testExecution) throws TestDriverInputNotFoundException,
             TestDataValueNotFoundException, PreConditionViolationException, TestDriverException {
         testDriverContext = new TestDriverContext(this);
-        for (var testInput : testInputRepository.findByTestCase(testExecution.getTestCase())) {
+        var testInputs = testInputRepository.findByTestCase(testExecution.getTestCase());
+        for (var testInput : testInputs) {
             var testDriverObservedOutputList = tryRunTestInput(testInput, testExecution);
             saveObservedOutputs(testDriverObservedOutputList, testExecution, testInput);
         }

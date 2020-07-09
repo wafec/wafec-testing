@@ -4,11 +4,13 @@ from keystoneauth1 import session
 from novaclient.client import Client as novaclient
 from glanceclient.client import Client as glanceclient
 from neutronclient.v2_0.client import Client as neutronclient
+from cinderclient.client import Client as cinderclient
 import base64
 
 NOVA_VERSION = '2.1'
 GLANCE_VERSION = '2'
 NEUTRON_VERSION = '2'
+CINDER_VERSION = '3'
 
 
 def decode_key(key):
@@ -44,4 +46,10 @@ def glance_client(key):
 def neutron_client(key):
     key_session = keystone_session(key)
     client = neutronclient(session=key_session)
+    return client
+
+
+def cinder_client(key):
+    key_session = keystone_session(key)
+    client = cinderclient(CINDER_VERSION, session=key_session)
     return client

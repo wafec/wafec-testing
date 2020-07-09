@@ -27,6 +27,7 @@ public abstract class AbstractServerMonitor extends AbstractNovaMonitor {
     protected TestDriverMonitorResult monitorInternal(final MapGet mapGet, final TestDriverObservedOutputBuilder builder) throws
             Exception {
         logger.debug("start monitorInternal");
+        last = null;
         try {
             var waitResult = new ConditionWaiter(timeout, interval).onError(this::onError).waitForConditionBeTrue(() -> {
                 var server = serverClient.findById(mapGet.<String>get("serverId"), mapGet.<String>get("key"));

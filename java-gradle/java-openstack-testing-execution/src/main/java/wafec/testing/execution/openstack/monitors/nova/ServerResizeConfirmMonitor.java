@@ -4,20 +4,19 @@ import org.springframework.stereotype.Component;
 import wafec.testing.driver.openstack.client.Server;
 
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 @Component
-public class ServerUnshelveMonitor extends AbstractServerMonitor {
-    public ServerUnshelveMonitor() {
-        super();
-        timeout = TimeUnit.MILLISECONDS.convert(4, TimeUnit.MINUTES);
-    }
-
+public class ServerResizeConfirmMonitor extends AbstractServerMonitor {
     @Override
     protected boolean assertTrue(Server server) {
         return Optional.ofNullable(server)
                 .map(Server::getStatus)
                 .map(String::toLowerCase)
-                .equals(Optional.of("active"));
+                .equals(Optional.of("active"))
+                ||
+                Optional.ofNullable(server)
+                .map(Server::getStatus)
+                .map(String::toLowerCase)
+                .equals(Optional.of("shutoff"));
     }
 }

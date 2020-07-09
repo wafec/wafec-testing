@@ -7,8 +7,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class ServerUnshelveMonitor extends AbstractServerMonitor {
-    public ServerUnshelveMonitor() {
+public class ServerMigrateMonitor extends AbstractServerMonitor {
+    public ServerMigrateMonitor() {
         super();
         timeout = TimeUnit.MILLISECONDS.convert(4, TimeUnit.MINUTES);
     }
@@ -18,6 +18,6 @@ public class ServerUnshelveMonitor extends AbstractServerMonitor {
         return Optional.ofNullable(server)
                 .map(Server::getStatus)
                 .map(String::toLowerCase)
-                .equals(Optional.of("active"));
+                .equals(Optional.of("verify_resize"));
     }
 }

@@ -14,8 +14,6 @@ import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 @Component
@@ -43,6 +41,24 @@ public class NovaInputModelBuilderModule extends TestDriverInputModelBuilderModu
     private ServerUnshelveMonitor serverUnshelveMonitor;
     @Autowired
     private ServerDeleteMonitor serverDeleteMonitor;
+    @Autowired
+    private ServerStopMonitor serverStopMonitor;
+    @Autowired
+    private ServerStartMonitor serverStartMonitor;
+    @Autowired
+    private ServerSuspendMonitor serverSuspendMonitor;
+    @Autowired
+    private ServerResumeMonitor serverResumeMonitor;
+    @Autowired
+    private ServerResizeMonitor serverResizeMonitor;
+    @Autowired
+    private ServerResizeConfirmMonitor serverResizeConfirmMonitor;
+    @Autowired
+    private ServerResizeRevertMonitor serverResizeRevertMonitor;
+    @Autowired
+    private ServerMigrateMonitor serverMigrateMonitor;
+    @Autowired
+    private ServerLiveMigrateMonitor serverLiveMigrateMonitor;
 
     @Override
     protected void configure(TestDriverInputModelBuilder builder) {
@@ -54,10 +70,19 @@ public class NovaInputModelBuilderModule extends TestDriverInputModelBuilderModu
                 .map("serverUnpause", this::serverUnpause)
                 .map("serverShelve", this::serverShelve)
                 .map("serverUnshelve", this::serverUnshelve)
-                .map("serverDelete", this::serverDelete);
+                .map("serverDelete", this::serverDelete)
+                .map("serverStop", this::serverStop)
+                .map("serverStart", this::serverStart)
+                .map("serverSuspend", this::serverSuspend)
+                .map("serverResume", this::serverResume)
+                .map("serverResize", this::serverResize)
+                .map("serverResizeConfirm", this::serverResizeConfirm)
+                .map("serverResizeRevert", this::serverResizeRevert)
+                .map("serverMigrate", this::serverMigrate)
+                .map("serverLiveMigrate", this::serverLiveMigrate);
     }
 
-    @PreCondition(target = OpenStackTestDriver.SECURED)
+    @PreCondition(target = PreCondition.SECURED)
     private List<TestDriverObservedOutput> flavorCreate(TestDriverInputFunctionHandler handler) throws
             TestDataValueNotFoundException, TestDriverException {
         var testData = handler.getTestData();
@@ -76,7 +101,7 @@ public class NovaInputModelBuilderModule extends TestDriverInputModelBuilderModu
         return builder.and().success(SOURCE, "flavorCreate").buildList();
     }
 
-    @PreCondition(target = OpenStackTestDriver.SECURED)
+    @PreCondition(target = PreCondition.SECURED)
     private List<TestDriverObservedOutput> imageCreate(TestDriverInputFunctionHandler handler) throws
             TestDataValueNotFoundException, TestDriverException {
         var testData = handler.getTestData();
@@ -100,7 +125,7 @@ public class NovaInputModelBuilderModule extends TestDriverInputModelBuilderModu
         return builder.and().success(SOURCE, "imageCreate").buildList();
     }
 
-    @PreCondition(target = OpenStackTestDriver.SECURED)
+    @PreCondition(target = PreCondition.SECURED)
     private List<TestDriverObservedOutput> serverCreate(TestDriverInputFunctionHandler handler) throws
             TestDataValueNotFoundException, TestDriverException {
         var testData = handler.getTestData();
@@ -137,7 +162,7 @@ public class NovaInputModelBuilderModule extends TestDriverInputModelBuilderModu
     private List<TestDriverObservedOutput> serverAction(TestDriverInputFunctionHandler handler,
                                                         AbstractServerMonitor serverMonitor,
                                                         String actionName,
-                                                        Consumer<Server> serverConsumer) throws
+                                                        OpenStackModuleActionConsumer<Server> serverConsumer) throws
             TestDataValueNotFoundException, TestDriverException {
         var testData = handler.getTestData();
         var key = TestDriverContextUtils.getKey(handler);
@@ -157,38 +182,116 @@ public class NovaInputModelBuilderModule extends TestDriverInputModelBuilderModu
         return builder.and().success(SOURCE, actionName).buildList();
     }
 
-    @PreCondition(target = OpenStackTestDriver.SECURED)
+    @PreCondition(target = PreCondition.SECURED)
     private List<TestDriverObservedOutput> serverPause(TestDriverInputFunctionHandler handler) throws
             TestDataValueNotFoundException, TestDriverException {
         final var key = TestDriverContextUtils.getKey(handler);
         return serverAction(handler, serverPauseMonitor, "serverPause", (server) -> serverClient.pause(key, server.getId()));
     }
 
-    @PreCondition(target = OpenStackTestDriver.SECURED)
+    @PreCondition(target = PreCondition.SECURED)
     private List<TestDriverObservedOutput> serverUnpause(TestDriverInputFunctionHandler handler) throws
             TestDataValueNotFoundException, TestDriverException {
         final var key = TestDriverContextUtils.getKey(handler);
         return serverAction(handler, serverUnpauseMonitor, "serverUnpause", (server) -> serverClient.unpause(key, server.getId()));
     }
 
-    @PreCondition(target = OpenStackTestDriver.SECURED)
+    @PreCondition(target = PreCondition.SECURED)
     private List<TestDriverObservedOutput> serverShelve(TestDriverInputFunctionHandler handler) throws
             TestDataValueNotFoundException, TestDriverException {
         final var key = TestDriverContextUtils.getKey(handler);
         return serverAction(handler, serverShelveMonitor, "serverShelve", (server) -> serverClient.shelve(key, server.getId()));
     }
 
-    @PreCondition(target = OpenStackTestDriver.SECURED)
+    @PreCondition(target = PreCondition.SECURED)
     private List<TestDriverObservedOutput> serverUnshelve(TestDriverInputFunctionHandler handler) throws
             TestDataValueNotFoundException, TestDriverException {
         final var key = TestDriverContextUtils.getKey(handler);
         return serverAction(handler, serverUnshelveMonitor, "serverUnshelve", (server) -> serverClient.unshelve(key, server.getId()));
     }
 
-    @PreCondition(target = OpenStackTestDriver.SECURED)
+    @PreCondition(target = PreCondition.SECURED)
     private List<TestDriverObservedOutput> serverDelete(TestDriverInputFunctionHandler handler) throws
             TestDataValueNotFoundException, TestDriverException {
         final var key = TestDriverContextUtils.getKey(handler);
         return serverAction(handler, serverDeleteMonitor, "serverDelete", (server) -> serverClient.delete(server.getId(), key));
+    }
+
+    @PreCondition(target = PreCondition.SECURED)
+    private List<TestDriverObservedOutput> serverStop(TestDriverInputFunctionHandler handler) throws
+            TestDataValueNotFoundException, TestDriverException {
+        final var key = TestDriverContextUtils.getKey(handler);
+        return serverAction(handler, serverStopMonitor, "serverStop", (server) -> serverClient.stop(key, server.getId()));
+    }
+
+    @PreCondition(target = PreCondition.SECURED)
+    private List<TestDriverObservedOutput> serverStart(TestDriverInputFunctionHandler handler) throws
+            TestDataValueNotFoundException, TestDriverException {
+        final var key = TestDriverContextUtils.getKey(handler);
+        return serverAction(handler, serverStartMonitor, "serverStart", (server) -> serverClient.start(key, server.getId()));
+    }
+
+    @PreCondition(target = PreCondition.SECURED)
+    private List<TestDriverObservedOutput> serverSuspend(TestDriverInputFunctionHandler handler) throws
+            TestDataValueNotFoundException, TestDriverException {
+        final var key = TestDriverContextUtils.getKey(handler);
+        return serverAction(handler, serverSuspendMonitor, "serverSuspend", (server) -> serverClient.suspend(key, server.getId()));
+    }
+
+    @PreCondition(target = PreCondition.SECURED)
+    private List<TestDriverObservedOutput> serverResume(TestDriverInputFunctionHandler handler) throws
+            TestDataValueNotFoundException, TestDriverException {
+        final var key = TestDriverContextUtils.getKey(handler);
+        return serverAction(handler, serverResumeMonitor, "serverResume", (server) -> serverClient.resume(key, server.getId()));
+    }
+
+    @PreCondition(target = PreCondition.SECURED)
+    private List<TestDriverObservedOutput> serverResize(TestDriverInputFunctionHandler handler) throws
+            TestDataValueNotFoundException, TestDriverException {
+        final var key = TestDriverContextUtils.getKey(handler);
+        return serverAction(handler, serverResizeMonitor, "serverResize", (server) -> {
+            var flavorName = handler.getTestData().getValue("flavor");
+            var flavorResult = flavorClient.findByName(key, flavorName);
+            if (flavorResult == null || flavorResult.size() == 0)
+                throw new ResourceNotFoundException(String.format("flavor %s", flavorName));
+            var flavor = flavorResult.get(0);
+            serverClient.resize(key, server.getId(), Resource.of(flavor.getId()));
+        });
+    }
+
+    @PreCondition(target = PreCondition.SECURED)
+    private List<TestDriverObservedOutput> serverResizeConfirm(TestDriverInputFunctionHandler handler) throws
+            TestDataValueNotFoundException, TestDriverException {
+        final var key = TestDriverContextUtils.getKey(handler);
+        return serverAction(handler, serverResizeConfirmMonitor, "serverResizeConfirm", (server) -> {
+            serverClient.resizeConfirm(key, server.getId(), "confirm");
+        });
+    }
+
+    @PreCondition(target = PreCondition.SECURED)
+    private List<TestDriverObservedOutput> serverResizeRevert(TestDriverInputFunctionHandler handler) throws
+            TestDataValueNotFoundException, TestDriverException {
+        final var key = TestDriverContextUtils.getKey(handler);
+        return serverAction(handler, serverResizeRevertMonitor, "serverResizeRevert", (server) -> {
+            serverClient.resizeConfirm(key, server.getId(), "revert");
+        });
+    }
+
+    @PreCondition(target = PreCondition.SECURED)
+    private List<TestDriverObservedOutput> serverMigrate(TestDriverInputFunctionHandler handler) throws
+            TestDataValueNotFoundException, TestDriverException {
+        final var key = TestDriverContextUtils.getKey(handler);
+        return serverAction(handler, serverMigrateMonitor, "serverMigrate", (server) -> {
+            serverClient.migrate(key, server.getId());
+        });
+    }
+
+    @PreCondition(target = PreCondition.SECURED)
+    private List<TestDriverObservedOutput> serverLiveMigrate(TestDriverInputFunctionHandler handler) throws
+            TestDataValueNotFoundException, TestDriverException {
+        final var key = TestDriverContextUtils.getKey(handler);
+        return serverAction(handler, serverLiveMigrateMonitor, "serverLiveMigrate", (server) -> {
+            serverClient.liveMigrate(key, server.getId());
+        });
     }
 }

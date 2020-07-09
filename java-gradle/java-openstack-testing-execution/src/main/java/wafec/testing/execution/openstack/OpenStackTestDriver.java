@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import wafec.testing.driver.openstack.client.*;
 import wafec.testing.execution.*;
+import wafec.testing.execution.openstack.modules.CinderInputModelBuilderModule;
 import wafec.testing.execution.openstack.modules.NovaInputModelBuilderModule;
 
 import java.util.List;
@@ -14,24 +15,25 @@ import java.util.UUID;
 @Component
 public class OpenStackTestDriver extends AbstractTestDriverAdapter {
     public static final String SOURCE = OpenStackTestDriver.class.getName();
-    public static final String SECURED = "preConditionSecured";
 
     Logger logger = LoggerFactory.getLogger(OpenStackTestDriver.class);
 
     @Autowired
     private KeyRepository keyRepository;
 
-    public OpenStackTestDriver(final NovaInputModelBuilderModule novaBuilderModule) {
+    public OpenStackTestDriver(final NovaInputModelBuilderModule novaBuilderModule,
+                               final CinderInputModelBuilderModule cinderBuilderModule) {
         super();
         configurePost((builder) -> {
             builder.map(novaBuilderModule);
+            builder.map(cinderBuilderModule);
         });
     }
 
     @Override
     protected void configure(TestDriverInputModelBuilder builder) {
         builder
-                .map(SECURED, this::preConditionSecured)
+                .map(PreCondition.SECURED, this::preConditionSecured)
                 .map("keyCreate", this::keyCreate)
         ;
     }

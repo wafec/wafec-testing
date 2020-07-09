@@ -1,5 +1,7 @@
 package wafec.testing.execution;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +12,8 @@ import java.util.stream.Collectors;
 public class TestDataMapper {
     @Autowired
     private TestInputParameterDataRepository testInputParameterDataRepository;
+
+    Logger logger = LoggerFactory.getLogger(TestDataMapper.class);
 
     public TestData fromTestInput(TestInput testInput) {
         var testInputParameterDataList = testInputParameterDataRepository.findByTestInput(testInput);
