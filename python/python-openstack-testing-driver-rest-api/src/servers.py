@@ -149,8 +149,20 @@ def migrate(id):
 def live_migrate(id):
     nova = commons.nova_client(request.args.get('key'))
     server = nova.servers.find(id=id)
-    nova.servers.live_migrate(server=server, host=None, block_migration=False, disk_over_commit=False)
+    host = request.args.get('host')
+    nova.servers.live_migrate(server=server, host=host, block_migration=False, disk_over_commit=False)
     return jsonify(success=True)
+
+
+@servers_api.route('/<id>/migrate/hosts', methods=['GET'])
+def migrate_hosts(id):
+    nova = commons.nova_client(request.args.get('key'))
+    hypervisors = nova.hypervisors.list()
+    hosts = list(map(lambda h: h.service['host'], hypervisors))
+    server = nova.servers.find(id=id)
+    server_view = mappers.server_to_view(server)
+    hosts = [h for h in hosts if h != server_view['host']]
+    return jsonify(list(hosts))
 
 
 @servers_api.errorhandler(Conflict)

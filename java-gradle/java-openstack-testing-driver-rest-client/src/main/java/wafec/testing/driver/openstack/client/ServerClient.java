@@ -3,6 +3,8 @@ package wafec.testing.driver.openstack.client;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @FeignClient(value = "servers", url = "${servers.url}", configuration = CustomOpenStackClientConfiguration.class)
 public interface ServerClient extends CustomOpenStackCrudClient<Server> {
     @RequestMapping(value = "/{id}/actions/pause", method = RequestMethod.POST)
@@ -28,5 +30,7 @@ public interface ServerClient extends CustomOpenStackCrudClient<Server> {
     @RequestMapping(value = "/{id}/actions/migrate", method = RequestMethod.POST)
     void migrate(@RequestParam("key") String key, @PathVariable("id") String id);
     @RequestMapping(value = "/{id}/actions/live-migrate", method = RequestMethod.POST)
-    void liveMigrate(@RequestParam("key") String key, @PathVariable("id") String id);
+    void liveMigrate(@RequestParam("key") String key, @PathVariable("id") String id, @RequestParam("host") String host);
+    @RequestMapping(value = "/{id}/migrate/hosts", method = RequestMethod.GET)
+    List<String> migrateHosts(@RequestParam("key") String key, @PathVariable("id") String id);
 }

@@ -9,6 +9,9 @@ import wafec.testing.driver.openstack.client.ServerUtils;
 import wafec.testing.execution.*;
 import wafec.testing.execution.openstack.OpenStackTestDriverException;
 import wafec.testing.execution.openstack.ResourceNotFoundException;
+import wafec.testing.execution.openstack.ResourceOnErrorStateException;
+
+import java.util.Optional;
 
 
 public abstract class AbstractServerMonitor extends AbstractNovaMonitor {
@@ -38,6 +41,8 @@ public abstract class AbstractServerMonitor extends AbstractNovaMonitor {
                 }
                 last = server;
                 logger.debug(server.toString());
+                if (stopOnErrorState(server))
+                    throw new ResourceOnErrorStateException(server.toString());
                 return assertTrue(server);
             });
             waitResult.getErrors().forEach(e -> builder.and().error(SOURCE, e));
@@ -52,5 +57,12 @@ public abstract class AbstractServerMonitor extends AbstractNovaMonitor {
             return ConditionWaitOnErrorResult.propagateFail(true);
         }
         return ConditionWaitOnErrorResult.propagatePass(false);
+    }
+
+    protected boolean stopOnErrorState(Server server) {
+        return Optional.ofNullable(server)
+                .map(Server::getStatus)
+                .map(String::toLowerCase)
+                .equals(Optional.of("error"));
     }
 }

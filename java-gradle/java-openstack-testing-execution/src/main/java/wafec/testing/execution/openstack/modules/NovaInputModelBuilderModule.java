@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Stream;
 
 @Component
@@ -291,7 +292,10 @@ public class NovaInputModelBuilderModule extends TestDriverInputModelBuilderModu
             TestDataValueNotFoundException, TestDriverException {
         final var key = TestDriverContextUtils.getKey(handler);
         return serverAction(handler, serverLiveMigrateMonitor, "serverLiveMigrate", (server) -> {
-            serverClient.liveMigrate(key, server.getId());
+            var hosts = serverClient.migrateHosts(key, server.getId());
+            var rand = new Random();
+            var host = hosts.get(rand.nextInt(hosts.size()));
+            serverClient.liveMigrate(key, server.getId(), host);
         });
     }
 }

@@ -21,4 +21,7 @@ public class Server {
     private String taskState;
     @SerializedName("vm_state")
     private String vmState;
+    @SerializedName("host_id")
+    private String hostId;
+    private String host;
 }

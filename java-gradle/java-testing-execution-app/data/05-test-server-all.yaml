@@ -1,5 +1,5 @@
 ---
-import-id: 15
+import-id: 17
 test-case:
   description: "All"
   target-system: "OpenStack, Nova"
@@ -24,12 +24,6 @@ test-case:
       type: "string"
     - name: "auth_url"
       value: "http://controller:5000/v3/"
-      type: "string"
-  - name: "serverDelete"
-    signature: "serverDelete"
-    test-args:
-    - name: "name"
-      value: "serverTest"
       type: "string"
   - name: "serverCreate"
     signature: "serverCreate"
@@ -135,6 +129,12 @@ test-case:
       type: "string"
   - name: "serverShelve"
     signature: "serverShelve"
+    test-args:
+    - name: "name"
+      value: "serverTest"
+      type: "string"
+  - name: "serverUnshelve"
+    signature: "serverUnshelve"
     test-args:
     - name: "name"
       value: "serverTest"
