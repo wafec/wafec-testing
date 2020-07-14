@@ -1,0 +1,8 @@
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:2.2.2.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'io.github.openfeign:feign-gson:9.4.0'
+    implementation 'com.rabbitmq:amqp-client:5.9.0'
+}

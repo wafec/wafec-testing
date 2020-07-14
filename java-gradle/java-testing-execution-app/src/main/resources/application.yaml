@@ -1,12 +1,22 @@
-flavors:
-  url: "http://localhost:5000/api/nova/flavors/"
-images:
-  url: "http://localhost:5000/api/glance/images/"
-servers:
-  url: "http://localhost:5000/api/nova/servers/"
-volumes:
-  url: "http://localhost:5000/api/cinder/volumes/"
-networks:
-  url: "http://localhost:5000/api/neutron/networks/"
-hosts:
-  url: "http://localhost:5000/api/nova/hosts"
+wafec:
+  testing:
+    driver:
+      openstack:
+        client:
+          flavors: "http://localhost:5000/api/nova/flavors/"
+          images: "http://localhost:5000/api/glance/images/"
+          servers: "http://localhost:5000/api/nova/servers/"
+          volumes: "http://localhost:5000/api/cinder/volumes/"
+          networks: "http://localhost:5000/api/neutron/networks/"
+    support:
+      rabbitmq:
+        management:
+          client:
+            username: "openstack"
+            password: "supersecret"
+            url: "http://controller:15672/api"
+        connection:
+          username: "openstack"
+          password: "supersecret"
+          host: "controller"
+          port: 5672

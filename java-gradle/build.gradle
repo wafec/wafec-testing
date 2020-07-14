@@ -38,9 +38,13 @@ project(':java-openstack-testing-execution') {
 project(':java-testing-execution-app') {
     apply plugin: 'application'
     dependencies {
+        implementation project(':java-testing-core')
         implementation project(':java-testing-execution')
         implementation project(':java-openstack-testing-execution')
         implementation project(':java-openstack-testing-driver-rest-client')
+        implementation project(':java-openstack-testing-execution-robustness')
+        implementation project(':java-testing-support')
+        implementation project(':java-testing-execution-robustness')
     }
     application {
         mainClassName = "wafec.testing.execution.app.App"
@@ -50,6 +54,28 @@ project(':java-testing-execution-app') {
 project(':java-testing-execution') {
     dependencies {
         implementation project(':java-testing-core')
+    }
+}
+
+project(':java-testing-execution-robustness') {
+    dependencies {
+        implementation project(':java-testing-execution')
+    }
+}
+
+project(':java-testing-support') {
+    dependencies {
+        implementation project(':java-testing-execution')
+        implementation project(':java-testing-execution-robustness')
+    }
+}
+
+project(':java-openstack-testing-execution-robustness') {
+    dependencies {
+        implementation project(':java-testing-execution')
+        implementation project(':java-testing-support')
+        implementation project(':java-testing-execution-robustness')
+        implementation project(':java-openstack-testing-execution')
     }
 }
 

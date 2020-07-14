@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
-public class TestDriverInputNotFoundException extends Exception {
+public class TestDriverInputNotFoundException extends TestDriverException {
     @Getter
     private String signature;
 

@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(value = "servers", url = "${servers.url}", configuration = CustomOpenStackClientConfiguration.class)
+@FeignClient(value = "servers", url = "${wafec.testing.driver.openstack.client.servers}", configuration = CustomOpenStackClientConfiguration.class)
 public interface ServerClient extends CustomOpenStackCrudClient<Server> {
     @RequestMapping(value = "/{id}/actions/pause", method = RequestMethod.POST)
     void pause(@RequestParam("key") String key, @PathVariable("id") String id);
