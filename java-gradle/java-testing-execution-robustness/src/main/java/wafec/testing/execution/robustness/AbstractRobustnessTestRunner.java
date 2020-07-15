@@ -3,64 +3,84 @@ package wafec.testing.execution.robustness;
 import org.springframework.beans.factory.annotation.Autowired;
 import wafec.testing.execution.*;
 
+import java.util.Arrays;
 import java.util.Date;
 
 public abstract class AbstractRobustnessTestRunner {
     protected final AbstractTestDriver testDriver;
     protected final DataInterception dataInterception;
-    protected final DataCorruption dataCorruption;
-    protected final DataHandler dataHandler;
+    protected final DataParser dataParser;
 
     @Autowired
     private TestExecutionRepository testExecutionRepository;
+    @Autowired
+    private RobustnessTestRepository robustnessTestRepository;
+    @Autowired
+    private RobustnessTestExecutionRepository robustnessTestExecutionRepository;
+
+    protected RobustnessTestExecution currentRobustnessTestExecution;
 
     public AbstractRobustnessTestRunner(AbstractTestDriver testDriver,
                                         DataInterception dataInterception,
-                                        DataCorruption dataCorruption,
-                                        DataHandler dataHandler) {
+                                        DataParser dataParser) {
         this.testDriver = testDriver;
         this.dataInterception = dataInterception;
-        this.dataCorruption = dataCorruption;
-        this.dataHandler = dataHandler;
+        this.dataParser = dataParser;
     }
 
-    public TestExecution manage(TestCase testCase) throws
+    public RobustnessTestExecution manage(RobustnessTest robustnessTest) throws
             TestDriverException,
             TestDataValueNotFoundException,
             PreConditionViolationException,
             RobustnessException {
-        TestExecution testExecution = TestExecution.of(testCase);
+        RobustnessTestExecution robustnessTestExecution = new RobustnessTestExecution();
+        robustnessTestExecution.setRobustnessTest(robustnessTest);
+        TestExecution testExecution = new TestExecution();
+        testExecution.setStartTime(new Date());
+        testExecution.setTestCase(robustnessTest.getTestCase());
         testExecutionRepository.save(testExecution);
-        return this.manage(testExecution);
+        robustnessTestExecution.setTestExecution(testExecution);
+        robustnessTestExecutionRepository.save(robustnessTestExecution);
+        return this.manage(robustnessTestExecution);
     }
 
-    public TestExecution manage(TestExecution testExecution) throws
+    public RobustnessTestExecution manage(RobustnessTestExecution robustnessTestExecution) throws
             TestDriverException,
             TestDataValueNotFoundException,
             PreConditionViolationException,
             RobustnessException {
+        currentRobustnessTestExecution = robustnessTestExecution;
         try {
-            dataInterception.turnOn(this::onDataIntercepted);
-            return testDriver.runTest(testExecution);
+            dataInterception.turnOn(this::handleDataIntercepted);
+            var testExecution = testDriver.runTest(robustnessTestExecution.getTestExecution());
+            robustnessTestExecution.setTestExecution(testExecution);
+            robustnessTestExecutionRepository.save(robustnessTestExecution);
+            return robustnessTestExecution;
         } finally {
             dataInterception.turnOff();
         }
     }
 
-    protected DataOperation onDataIntercepted(byte[] raw) {
+    protected abstract ApplicationData adulterate(ApplicationData appData,
+                                                  RobustnessTestExecution robustnessTestExecution) throws
+            CouldNotApplyOperatorException;
+
+    protected DataOperation handleDataIntercepted(byte[] data) {
         ApplicationData applicationData = null;
         try {
-            applicationData = dataHandler.handle(raw);
-            var applicationDataResult = dataCorruption.corrupt(applicationData);
-            if (applicationData.compareChange(applicationDataResult)) {
-                return DataOperation.of(new Date(), applicationData, applicationDataResult, DataOperation.MUTATED);
+            applicationData = dataParser.handle(data);
+            var applicationDataResult = adulterate(applicationData, currentRobustnessTestExecution);
+            if (!Arrays.equals(data, applicationDataResult.getData())) {
+                return DataOperation.of(new Date(), applicationData, applicationDataResult, DataOperation.NOT_SAME);
             } else {
                 return DataOperation.of(new Date(), applicationData, applicationDataResult, DataOperation.IGNORED);
             }
         } catch (CouldNotApplyOperatorException exc) {
-            return DataOperation.of(new Date(), null, applicationData, DataOperation.CANNOT_APPLY);
+            exc.printStackTrace();
+            return DataOperation.of(new Date(), applicationData, applicationData, DataOperation.CANNOT_APPLY);
         } catch (DataParseException exc) {
-            return DataOperation.of(new Date(), null, ApplicationData.ofRaw(raw), DataOperation.ERROR);
+            exc.printStackTrace();
+            return DataOperation.of(new Date(), ApplicationData.of(data), ApplicationData.of(data), DataOperation.ERROR);
         }
     }
 }

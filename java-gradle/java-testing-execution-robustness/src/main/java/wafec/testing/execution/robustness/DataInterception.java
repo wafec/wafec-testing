@@ -1,6 +1,6 @@
 package wafec.testing.execution.robustness;
 
 public interface DataInterception {
-    void turnOn(DataListener dataCallback) throws DataInterceptionException;
+    void turnOn(DataListener dataListener) throws DataInterceptionException;
     void turnOff() throws DataInterceptionException;
 }

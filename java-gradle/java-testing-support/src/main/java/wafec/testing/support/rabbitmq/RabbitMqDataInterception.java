@@ -21,11 +21,11 @@ import java.util.concurrent.TimeoutException;
 
 @Component
 public class RabbitMqDataInterception implements DataInterception {
-    private static final String RDI_PREFIX = "RDI-";
+    public static final String RDI_PREFIX = "RDI-";
     private static final String RDI_QUEUE_PREFIX = String.format("%sQ-", RDI_PREFIX);
     private static final String RDI_EXCHANGE_PREFIX = String.format("%sE-", RDI_PREFIX);
 
-    private DataListener dataCallback;
+    private DataListener dataListener;
 
     @Value("${wafec.testing.support.rabbitmq.connection.host}")
     private String host;
@@ -41,11 +41,11 @@ public class RabbitMqDataInterception implements DataInterception {
 
     private ConnectionFactory connectionFactory;
     private Connection connection;
-    private List<RabbitMqCustomBinding> customBindings;
+    private List<RabbitMqBiBindingData> customBindings;
 
     Logger logger = LoggerFactory.getLogger(RabbitMqDataInterception.class);
 
-    private void ensureConnection() throws IOException, TimeoutException {
+    private void connect() throws IOException, TimeoutException {
         connectionFactory = new ConnectionFactory();
         connectionFactory.setHost(host);
         connectionFactory.setUsername(username);
@@ -54,12 +54,21 @@ public class RabbitMqDataInterception implements DataInterception {
         connection = connectionFactory.newConnection();
     }
 
+    private void addCustomBinding(RabbitMqBiBindingData customBinding) {
+        customBindings.add(customBinding);
+    }
+
+    private void clear() {
+        customBindings = null;
+        this.dataListener = null;
+    }
+
     @Override
-    public void turnOn(DataListener dataCallback) throws DataInterceptionException {
+    public void turnOn(DataListener dataListener) throws DataInterceptionException {
         try {
-            this.dataCallback = dataCallback;
+            this.dataListener = dataListener;
             this.customBindings = new ArrayList<>();
-            ensureConnection();
+            connect();
             var hosts = rabbitManagementClient.getVirtualHosts();
             for (var host : hosts) {
                 logger.debug(String.format("Host: %s", host));
@@ -90,51 +99,61 @@ public class RabbitMqDataInterception implements DataInterception {
     }
 
     private void interceptTopic(BindingView binding) throws IOException, TimeoutException {
-            Channel channel = connection.createChannel();
-            var rdiQueue = String.format("%s%s", RDI_QUEUE_PREFIX, binding.getDestination());
-            var rdiExchange = String.format("%s%s", RDI_EXCHANGE_PREFIX, binding.getSource());
-
-            customBindings.add(RabbitMqCustomBinding.of(binding.getSource(), rdiExchange, binding.getRoutingKey(),
-                    rdiExchange, binding.getDestination(), ""));
-
-            QueueView queueView = rabbitManagementClient.getQueue(binding.getVirtualHost(), binding.getDestination());
-            channel.queueUnbind(binding.getDestination(), binding.getSource(), binding.getRoutingKey());
-            channel.queueDeclare(rdiQueue, queueView.isDurable(), queueView.isExclusive(),
-                    queueView.isAutoDelete(), null);
-            channel.exchangeDeclare(rdiExchange, "direct");
-            channel.queueBind(binding.getDestination(), rdiExchange, "");
-            channel.queueBind(rdiQueue, binding.getSource(), binding.getRoutingKey());
-            channel.basicConsume(rdiQueue, true, CustomDeliverCallback.of(connection, channel, rdiExchange, this.dataCallback), (tag) -> {
-            });
+        Channel channel = connection.createChannel();
+        var rdiQueue = String.format("%s%s", RDI_QUEUE_PREFIX, binding.getDestination());
+        var rdiExchange = String.format("%s%s", RDI_EXCHANGE_PREFIX, binding.getSource());
+        var customBinding = RabbitMqBiBindingData.of(binding.getSource(), rdiQueue, binding.getRoutingKey(),
+                rdiExchange, "topic", binding.getDestination(), binding.getRoutingKey());
+        addCustomBinding(customBinding);
+        rebindStart(channel, customBinding);
+        channel.basicConsume(rdiQueue, false, "rabbitmq-data-interception",
+                new CustomDefaultConsumer(channel, customBinding, this::handleDataIntercepted));
     }
 
-    private void tryRestoreBindings() {
+    private byte[] handleDataIntercepted(byte[] body) {
+        try {
+            var appData = dataListener.intercept(body);
+            return appData.getCurrent().getData();
+        } catch(DataInterceptionException exc) {
+            exc.printStackTrace();
+            return body;
+        }
+    }
+
+    private void rebindStart(Channel channel, RabbitMqBiBindingData bindingData) throws IOException {
+        channel.queueDeclare(bindingData.getDestinationQueue1(), true, false, false, null);
+        channel.exchangeDeclare(bindingData.getSourceExchange2(), bindingData.getSourceExchangeType2());
+        channel.queueBind(bindingData.getDestinationQueue1(), bindingData.getSourceExchange1(), bindingData.getRoutingKey1());
+        channel.queueBind(bindingData.getDestinationQueue2(), bindingData.getSourceExchange2(), bindingData.getRoutingKey2());
+        channel.queueUnbind(bindingData.getDestinationQueue2(), bindingData.getSourceExchange1(), bindingData.getRoutingKey1());
+    }
+
+    private void rebindEnd(Channel channel, RabbitMqBiBindingData bindingData) throws IOException {
+        channel.queueBind(bindingData.getDestinationQueue2(), bindingData.getSourceExchange1(), bindingData.getRoutingKey1());
+        channel.queueUnbind(bindingData.getDestinationQueue1(), bindingData.getSourceExchange1(), bindingData.getRoutingKey1());
+        channel.queueUnbind(bindingData.getDestinationQueue2(), bindingData.getSourceExchange2(), bindingData.getRoutingKey2());
+        channel.queueDelete(bindingData.getDestinationQueue1());
+        channel.exchangeDelete(bindingData.getSourceExchange2());
+    }
+
+    private void tryRestore() {
         for(var customBinding : customBindings) {
             try (Channel channel = connection.createChannel()) {
-                channel.queueUnbind(customBinding.getSourceExchange1(), customBinding.getDestinationQueue1(),
-                        customBinding.getRoutingKey1());
-                channel.queueUnbind(customBinding.getSourceExchange2(), customBinding.getDestinationQueue2(),
-                        customBinding.getRoutingKey2());
-                channel.queueDelete(customBinding.getDestinationQueue1());
-                channel.exchangeDelete(customBinding.getSourceExchange2());
-                channel.queueBind(customBinding.getDestinationQueue2(), customBinding.getSourceExchange1(),
-                        customBinding.getRoutingKey1());
+                rebindEnd(channel, customBinding);
             } catch(IOException | TimeoutException exc) {
                 logger.warn(exc.getMessage(), exc);
             }
         }
-        customBindings = null;
     }
 
     @Override
     public void turnOff() throws DataInterceptionException {
-        this.dataCallback = null;
         try {
             if (customBindings != null && customBindings.size() > 0)
-                tryRestoreBindings();
+                tryRestore();
             if (connection != null)
                 connection.close();
-            System.out.println("Closed");
+            clear();
         } catch (IOException exc) {
             throw new DataInterceptionException(exc.getMessage(), exc);
         }

@@ -1,6 +1,6 @@
 package wafec.testing.execution.robustness;
 
-public interface DataCorruption {
+public interface DataTamper {
     String STRING = "string";
     String NUMBER = "number";
     String BOOLEAN = "boolean";
@@ -8,6 +8,5 @@ public interface DataCorruption {
     String LIST = "collection";
     String MAP = "dictionary";
 
-    String corrupt(String value, String valueType) throws CouldNotApplyOperatorException;
-    ApplicationData corrupt(ApplicationData applicationData) throws CouldNotApplyOperatorException;
+    Object adulterate(Object data, String sourceKey, String context, RobustnessTestExecution robustnessTestExecution);
 }

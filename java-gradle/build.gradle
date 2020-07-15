@@ -72,6 +72,7 @@ project(':java-testing-support') {
 
 project(':java-openstack-testing-execution-robustness') {
     dependencies {
+        implementation project(':java-testing-core')
         implementation project(':java-testing-execution')
         implementation project(':java-testing-support')
         implementation project(':java-testing-execution-robustness')

@@ -10,18 +10,22 @@ import wafec.testing.driver.openstack.client.*;
 import wafec.testing.execution.*;
 import wafec.testing.execution.openstack.*;
 import wafec.testing.execution.openstack.robustness.OpenStackRobustnessTestRunner;
-import wafec.testing.execution.robustness.DummyDataCorruption;
+import wafec.testing.execution.robustness.RobustnessTest;
+import wafec.testing.execution.robustness.RobustnessTestRepository;
+import wafec.testing.execution.robustness.SameResultTamper;
 import wafec.testing.support.rabbitmq.RabbitMqDataInterception;
 import wafec.testing.support.rabbitmq.management.RabbitMqManagementClient;
 
 @Configuration
 @EnableJpaRepositories(basePackageClasses = {
         TestCaseRepository.class,
-        KeyRepository.class
+        KeyRepository.class,
+        RobustnessTestRepository.class
 })
 @EntityScan(basePackageClasses = {
         TestCase.class,
-        Key.class
+        Key.class,
+        RobustnessTest.class
 })
 @ComponentScan(basePackageClasses = {
         App.class,
@@ -29,7 +33,7 @@ import wafec.testing.support.rabbitmq.management.RabbitMqManagementClient;
         TestOutputMapper.class,
         OpenStackRobustnessTestRunner.class,
         RabbitMqDataInterception.class,
-        DummyDataCorruption.class
+        SameResultTamper.class
 })
 @EnableFeignClients(basePackageClasses = {
         FlavorClient.class,
