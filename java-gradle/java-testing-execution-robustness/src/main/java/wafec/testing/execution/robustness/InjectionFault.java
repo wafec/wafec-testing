@@ -14,8 +14,8 @@ public class InjectionFault {
     @ManyToOne
     @JoinColumn(columnDefinition = "robustness_test_execution_id", referencedColumnName = "id")
     private RobustnessTestExecution robustnessTestExecution;
-    @Column(name = "source_key")
-    private String sourceKey;
-    private String context;
+    @ManyToOne
+    @JoinColumn(columnDefinition = "injection_target_id", referencedColumnName = "id")
+    private InjectionTarget injectionTarget;
     private boolean used;
 }

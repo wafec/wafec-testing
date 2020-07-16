@@ -1,5 +1,7 @@
-package wafec.testing.execution.app;
+package wafec.testing.execution.app.commandline;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import picocli.CommandLine.*;
 import wafec.testing.execution.TestCase;
@@ -22,6 +24,9 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
         @Option(names = { "-r", "--robustness-test" }) long robustnessTestId = -1;
     }
 
+    @Option(defaultValue = "false", names = { "-s", "--scan" })
+    private boolean scan;
+
     @Autowired
     private OpenStackRobustnessTestRunner openStackRobustnessTestRunner;
     @Autowired
@@ -30,6 +35,8 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
     private RobustnessTestExecutionRepository robustnessTestExecutionRepository;
     @Autowired
     private RobustnessTestRepository robustnessTestRepository;
+
+    private Logger logger = LoggerFactory.getLogger(TestingRobustnessOpenStack.class);
 
     @Override
     public Integer call() throws Exception {
@@ -45,8 +52,11 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
         } else {
             throw new IllegalStateException();
         }
-        System.out.println(String.format("RobustnessTest: %d, TestCase: %d", robustnessTest.getId(), robustnessTest.getTestCase().getId()));
-        openStackRobustnessTestRunner.manage(robustnessTest);
+        logger.info(String.format("BEGIN robustness-test-id=%d, test-case-id=%d, scan=%s",
+                robustnessTest.getId(), robustnessTest.getTestCase().getId(), scan));
+        openStackRobustnessTestRunner.manage(robustnessTest, scan);
+        logger.info(String.format("  END robustness-test-id=%d, test-case-id=%d, scan=%s",
+                robustnessTest.getId(), robustnessTest.getTestCase().getId(), scan));
         return 0;
     }
 }

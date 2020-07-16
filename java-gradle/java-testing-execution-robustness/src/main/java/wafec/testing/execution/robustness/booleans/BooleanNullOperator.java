@@ -12,6 +12,8 @@ public class BooleanNullOperator extends AbstractBooleanOperator {
 
     @Override
     protected Boolean mutateObject(Boolean value) throws CouldNotApplyOperatorException {
+        if (value == null)
+            throw new CouldNotApplyOperatorException("Value is already null");
         return null;
     }
 }

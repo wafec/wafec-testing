@@ -1,4 +1,4 @@
-package wafec.testing.execution.app;
+package wafec.testing.execution.app.commandline;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

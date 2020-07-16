@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 
 @ToString
-public abstract class DataMutationOperator {
+public abstract class DataMutationOperator implements GenericTypeOperator {
     @Getter
     protected String name;
     @Getter
@@ -32,5 +32,10 @@ public abstract class DataMutationOperator {
         throwIfNull(value);
         if (value.size() == 0)
             throw new CouldNotApplyOperatorException("Could not apply to empty list");
+    }
+
+    @Override
+    public String getInjectionKey() {
+        return String.format("%s.%s.%s", category, dataType, name);
     }
 }

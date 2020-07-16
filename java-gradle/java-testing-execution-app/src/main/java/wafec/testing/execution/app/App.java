@@ -1,12 +1,12 @@
 package wafec.testing.execution.app;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import picocli.CommandLine;
 import picocli.CommandLine.IFactory;
+import wafec.testing.execution.app.commandline.Testing;
 
 @SpringBootApplication
 public class App implements CommandLineRunner, ExitCodeGenerator {

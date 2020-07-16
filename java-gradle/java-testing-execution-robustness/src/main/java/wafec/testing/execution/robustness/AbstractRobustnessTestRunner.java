@@ -28,7 +28,7 @@ public abstract class AbstractRobustnessTestRunner {
         this.dataParser = dataParser;
     }
 
-    public RobustnessTestExecution manage(RobustnessTest robustnessTest) throws
+    public RobustnessTestExecution manage(RobustnessTest robustnessTest, boolean scan) throws
             TestDriverException,
             TestDataValueNotFoundException,
             PreConditionViolationException,
@@ -40,6 +40,7 @@ public abstract class AbstractRobustnessTestRunner {
         testExecution.setTestCase(robustnessTest.getTestCase());
         testExecutionRepository.save(testExecution);
         robustnessTestExecution.setTestExecution(testExecution);
+        robustnessTestExecution.setScan(scan);
         robustnessTestExecutionRepository.save(robustnessTestExecution);
         return this.manage(robustnessTestExecution);
     }

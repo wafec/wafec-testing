@@ -1,9 +1,8 @@
 package wafec.testing.support.rabbitmq;
 
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
+import com.rabbitmq.client.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import wafec.testing.execution.robustness.DataListener;
 
 import java.io.IOException;
@@ -12,6 +11,8 @@ import java.util.function.Function;
 public class CustomDefaultConsumer extends DefaultConsumer {
     private RabbitMqBiBindingData customBinding;
     private CustomDefaultDataTransformer transformer;
+
+    Logger logger = LoggerFactory.getLogger(CustomDefaultConsumer.class);
 
     public CustomDefaultConsumer(Channel channel, RabbitMqBiBindingData customBinding,
                                  CustomDefaultDataTransformer transformer) {
@@ -30,9 +31,19 @@ public class CustomDefaultConsumer extends DefaultConsumer {
                                AMQP.BasicProperties properties,
                                byte[] body) throws IOException {
         long deliveryTag = envelope.getDeliveryTag();
-        if (transformer != null)
-            body = transformer.apply(body);
-        getChannel().basicPublish(customBinding.getSourceExchange2(), customBinding.getRoutingKey2(), properties, body);
-        getChannel().basicAck(deliveryTag, true);
+
+        try {
+            if (transformer != null)
+                body = transformer.apply(body);
+        } catch (DataTransformerException exc) {
+            logger.warn(exc.getMessage());
+        }
+
+        try {
+            getChannel().basicPublish(customBinding.getSourceExchange2(), customBinding.getRoutingKey2(), properties, body);
+            getChannel().basicAck(deliveryTag, true);
+        } catch (AlreadyClosedException exc) {
+            logger.warn(exc.getMessage());
+        }
     }
 }

@@ -69,7 +69,7 @@ public class OpenStackRobustnessTestRunner extends AbstractRobustnessTestRunner 
                     return mapper.convertValue(
                             dataTamper.adulterate(JsonUtils.getValue(object.getResult()),
                                     methodNode.asText(),
-                                    object.getContext(),
+                                    object.getQualifiedContext(),
                                     robustnessTestExecution),
                             JsonNode.class
                     );

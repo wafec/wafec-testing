@@ -1,4 +1,4 @@
-package wafec.testing.execution.app;
+package wafec.testing.execution.app.commandline;
 
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;

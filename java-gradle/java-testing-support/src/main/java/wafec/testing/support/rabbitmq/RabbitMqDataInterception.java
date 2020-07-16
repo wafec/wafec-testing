@@ -110,7 +110,10 @@ public class RabbitMqDataInterception implements DataInterception {
                 new CustomDefaultConsumer(channel, customBinding, this::handleDataIntercepted));
     }
 
-    private byte[] handleDataIntercepted(byte[] body) {
+    private byte[] handleDataIntercepted(byte[] body) throws DataTransformerException {
+        if (dataListener == null)
+            throw new DataTransformerException("Interception has closed");
+
         try {
             var appData = dataListener.intercept(body);
             return appData.getCurrent().getData();

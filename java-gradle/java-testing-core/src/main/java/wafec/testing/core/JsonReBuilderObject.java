@@ -38,10 +38,13 @@ public class JsonReBuilderObject {
 
     @Override
     public String toString() {
-        if (StringUtils.isNotEmpty(fieldName)) {
+        return getQualifiedContext();
+    }
+
+    public String getQualifiedContext() {
+        if (StringUtils.isNotEmpty(fieldName))
             return String.format("%s.%s", context, fieldName);
-        } else {
+        else
             return String.format("%s[%d]", context, index);
-        }
     }
 }

@@ -12,6 +12,8 @@ public class BooleanTrueOperator extends AbstractBooleanOperator {
 
     @Override
     protected Boolean mutateObject(Boolean value) throws CouldNotApplyOperatorException {
+        if (value == true)
+            throw new CouldNotApplyOperatorException("Value is already true");
         return true;
     }
 }

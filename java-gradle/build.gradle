@@ -23,6 +23,7 @@ subprojects {
         testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
         testImplementation 'junit:junit:4.12'
         implementation 'org.apache.commons:commons-lang3:3.0'
+        implementation 'org.apache.commons:commons-collections4:4.4'
         implementation 'com.google.code.findbugs:jsr305:3.0.2'
     }
 }
@@ -59,6 +60,7 @@ project(':java-testing-execution') {
 
 project(':java-testing-execution-robustness') {
     dependencies {
+        implementation project(':java-testing-core')
         implementation project(':java-testing-execution')
     }
 }

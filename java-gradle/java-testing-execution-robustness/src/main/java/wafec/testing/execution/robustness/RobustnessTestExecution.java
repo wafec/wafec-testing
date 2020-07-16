@@ -19,4 +19,6 @@ public class RobustnessTestExecution {
     @ManyToOne
     @JoinColumn(columnDefinition = "test_execution_id", referencedColumnName = "id")
     private TestExecution testExecution;
+    private boolean stopFaultPropagation;
+    private boolean scan;
 }
