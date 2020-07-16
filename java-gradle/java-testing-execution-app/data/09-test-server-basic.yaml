@@ -1,5 +1,5 @@
 ---
-import-id: 1
+import-id: 4
 test-case:
   description: "Basic Setup"
   target-system: "OpenStack, Nova"
@@ -9,40 +9,31 @@ test-case:
     test-args:
     - name: "username"
       value: "admin"
-      type: "string"
     - name: "password"
       value: "supersecret"
       type: "secret"
     - name: "user_domain_name"
       value: "Default"
-      type: "string"
     - name: "project_name"
       value: "admin"
-      type: "string"
     - name: "project_domain_name"
       value: "Default"
-      type: "string"
     - name: "auth_url"
       value: "http://controller:5000/v3/"
-      type: "string"
   - name: "serverCreate"
     signature: "serverCreate"
+    important: true
     test-args:
     - name: "name"
       value: "serverTest"
-      type: "string"
     - name: "flavor"
       value: "f512"
-      type: "string"
     - name: "image"
       value: "cirros"
-      type: "string"
     - name: "network"
       value: "provider"
-      type: "string"
   - name: "serverDelete"
     signature: "serverDelete"
     test-args:
     - name: "name"
       value: "serverTest"
-      type: "string"

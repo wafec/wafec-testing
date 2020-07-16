@@ -17,8 +17,9 @@ public class InjectionTarget {
     @ManyToOne
     @JoinColumn(columnDefinition = "robustness_test_id", referencedColumnName = "id")
     private RobustnessTest robustnessTest;
-    private long occurrences;
+    private long monitorCount;
     private boolean discard;
+    @Column(length = 15000)
     private String description;
 
     public String getQualifiedDescription() {

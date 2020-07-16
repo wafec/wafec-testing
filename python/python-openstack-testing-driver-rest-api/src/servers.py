@@ -15,7 +15,9 @@ def get():
         search_opts['name'] = name
     nova = commons.nova_client(request.args.get('key'))
     servers = nova.servers.list(search_opts=search_opts)
-    return jsonify(list(map(lambda server: mappers.server_to_view(server), servers))), 201
+    servers_list = list(map(lambda server: mappers.server_to_view(server), servers))
+    servers_list = sorted(servers_list, key=lambda server: commons.str_to_date(server['created']), reverse=True)
+    return jsonify(servers_list), 201
 
 
 @servers_api.route('/<id>', methods=['GET'])

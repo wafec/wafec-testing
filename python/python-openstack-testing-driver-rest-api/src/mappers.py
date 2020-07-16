@@ -40,7 +40,8 @@ def server_to_view(server):
             "task_state": str(getattr(server, 'OS-EXT-STS:task_state')),
             "vm_state": str(getattr(server, 'OS-EXT-STS:vm_state')),
             "host_id": server.hostId,
-            "host": str(getattr(server, 'OS-EXT-SRV-ATTR:host'))
+            "host": str(getattr(server, 'OS-EXT-SRV-ATTR:host')),
+            "created": str(server.created)
     }
 
 

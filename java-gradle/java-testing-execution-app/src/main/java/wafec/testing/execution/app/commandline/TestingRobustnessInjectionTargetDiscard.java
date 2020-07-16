@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @Command(name = "discard")
 public class TestingRobustnessInjectionTargetDiscard implements Callable<Integer> {
-    @Option(names = { "-n", "--discard" }, defaultValue = "false")
+    @Option(names = { "-d", "--discard" }, defaultValue = "false")
     private boolean discard;
     @Option(names = { "-i", "--inverse" }, defaultValue = "false")
     private boolean inverse;

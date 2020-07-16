@@ -18,6 +18,7 @@ public class TestInput implements InputSignature {
     private TestCase testCase;
     private String name;
     private String signature;
+    private boolean important;
 
     @Override
     public boolean match(InputSignature otherSignature) {

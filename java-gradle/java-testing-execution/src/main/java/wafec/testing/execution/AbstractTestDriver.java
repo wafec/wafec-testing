@@ -1,8 +1,8 @@
 package wafec.testing.execution;
 
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
 
@@ -19,27 +19,54 @@ public abstract class AbstractTestDriver {
     private TestExecutionRepository testExecutionRepository;
     @Autowired
     private TestOutputRepository testOutputRepository;
+    @Autowired
+    private TestExecutionInputRepository testExecutionInputRepository;
 
     protected TestDriverContext testDriverContext;
+    @Setter
+    protected EnvironmentController environmentController;
 
-    public TestExecution runTest(TestCase testCase) throws TestDriverInputNotFoundException,
+    public TestExecution runTest(TestCase testCase) throws
             TestDataValueNotFoundException, PreConditionViolationException, TestDriverException {
         var testExecution = TestExecution.of(testCase);
         testExecutionRepository.save(testExecution);
         return runTest(testExecution);
     }
 
-    public TestExecution runTest(TestExecution testExecution) throws TestDriverInputNotFoundException,
+    public TestExecution runTest(TestExecution testExecution) throws
             TestDataValueNotFoundException, PreConditionViolationException, TestDriverException {
-        testDriverContext = new TestDriverContext(this);
-        var testInputs = testInputRepository.findByTestCase(testExecution.getTestCase());
-        for (var testInput : testInputs) {
-            var testDriverObservedOutputList = tryRunTestInput(testInput, testExecution);
-            saveObservedOutputs(testDriverObservedOutputList, testExecution, testInput);
+        try {
+            if (environmentController != null)
+                environmentController.setUp();
+            testDriverContext = new TestDriverContext(this);
+            var testInputs = testInputRepository.findByTestCase(testExecution.getTestCase());
+            for (var testInput : testInputs) {
+                var testExecutionInput = new TestExecutionInput();
+                testExecutionInput.setTestExecution(testExecution);
+                testExecutionInput.setTestInput(testInput);
+                testExecutionInput.setStatus(TestExecutionInput.STATUS_INIT);
+                testExecutionInputRepository.save(testExecutionInput);
+            }
+            for (var testInput : testInputs) {
+                var testExecutionInput = testExecutionInputRepository
+                        .findByTestInputAndTestExecution(testInput, testExecution).stream().findFirst()
+                        .orElseThrow(IllegalStateException::new);
+                testExecutionInput.setStatus(TestExecutionInput.STATUS_IN_USE);
+                testExecutionInputRepository.save(testExecutionInput);
+                var testDriverObservedOutputList = tryRunTestInput(testInput, testExecution);
+                saveObservedOutputs(testDriverObservedOutputList, testExecution, testInput);
+                testExecutionInput.setStatus(TestExecutionInput.STATUS_END);
+                testExecutionInputRepository.save(testExecutionInput);
+            }
+            testExecution.setEndTime(new Date());
+            testExecutionRepository.save(testExecution);
+            return testExecution;
+        } catch (EnvironmentException exc) {
+            throw new TestDriverException(exc.getMessage(), exc);
+        } finally {
+            if (environmentController != null)
+                environmentController.tearDown();
         }
-        testExecution.setEndTime(new Date());
-        testExecutionRepository.save(testExecution);
-        return testExecution;
     }
 
     private void saveObservedOutputs(List<TestDriverObservedOutput> observedOutputs, TestExecution testExecution,

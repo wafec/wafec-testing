@@ -6,6 +6,7 @@ from glanceclient.client import Client as glanceclient
 from neutronclient.v2_0.client import Client as neutronclient
 from cinderclient.client import Client as cinderclient
 import base64
+import datetime
 
 NOVA_VERSION = '2.1'
 GLANCE_VERSION = '2'
@@ -53,3 +54,8 @@ def cinder_client(key):
     key_session = keystone_session(key)
     client = cinderclient(CINDER_VERSION, session=key_session)
     return client
+
+
+def str_to_date(value):
+    # e.g.: 2020-07-16T15:51:50Z
+    return datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%SZ')

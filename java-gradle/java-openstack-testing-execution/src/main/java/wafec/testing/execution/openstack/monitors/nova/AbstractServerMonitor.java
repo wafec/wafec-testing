@@ -37,7 +37,7 @@ public abstract class AbstractServerMonitor extends AbstractNovaMonitor {
                 if (server == null)
                     throw new ResourceNotFoundException(String.format("server %s", mapGet.<String>get("serverId")));
                 if (last == null || ServerUtils.hasChangedState(last, server)) {
-                    builder.and().change(SOURCE, String.format("Server Change: %s", server.toString()));
+                    builder.and().change(SOURCE, ServerUtils.dumpState(server));
                 }
                 last = server;
                 logger.debug(server.toString());

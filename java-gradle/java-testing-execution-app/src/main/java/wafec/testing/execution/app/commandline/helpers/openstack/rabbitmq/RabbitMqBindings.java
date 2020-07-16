@@ -1,16 +1,13 @@
-package wafec.testing.execution.helpers.openstack.rabbitmq;
+package wafec.testing.execution.app.commandline.helpers.openstack.rabbitmq;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import picocli.CommandLine.*;
 import wafec.testing.support.rabbitmq.RabbitMqDataInterception;
 import wafec.testing.support.rabbitmq.management.BindingView;
-import wafec.testing.support.rabbitmq.management.RabbitMqManagementClient;
 import wafec.testing.support.rabbitmq.management.RabbitMqManagementClientWrapped;
-import wafec.testing.support.rabbitmq.management.VirtualHostView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 

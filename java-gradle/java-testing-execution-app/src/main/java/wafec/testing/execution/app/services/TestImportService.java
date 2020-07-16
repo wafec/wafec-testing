@@ -99,6 +99,7 @@ public class TestImportService {
         testInput.setName(testInputItem.getName());
         testInput.setPosition(position);
         testInput.setSignature(testInputItem.getSignature());
+        testInput.setImportant(Optional.ofNullable(testInputItem.getImportant()).orElse(false));
 
         testInputRepository.save(testInput);
 
@@ -111,7 +112,7 @@ public class TestImportService {
         TestInputParameter parameter = new TestInputParameter();
         parameter.setName(testArgumentItem.getName());
         parameter.setTestInput(testInput);
-        parameter.setParamType(testArgumentItem.getArgType());
+        parameter.setParamType(Optional.ofNullable(testArgumentItem.getArgType()).orElse("object"));
 
         TestInputParameterData data = new TestInputParameterData();
         data.setTestInputParameter(parameter);

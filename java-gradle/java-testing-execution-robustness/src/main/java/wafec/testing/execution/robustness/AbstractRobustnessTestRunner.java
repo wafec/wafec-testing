@@ -1,5 +1,6 @@
 package wafec.testing.execution.robustness;
 
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import wafec.testing.execution.*;
 
@@ -19,6 +20,8 @@ public abstract class AbstractRobustnessTestRunner {
     private RobustnessTestExecutionRepository robustnessTestExecutionRepository;
 
     protected RobustnessTestExecution currentRobustnessTestExecution;
+    @Setter
+    protected EnvironmentController environmentController;
 
     public AbstractRobustnessTestRunner(AbstractTestDriver testDriver,
                                         DataInterception dataInterception,
@@ -52,13 +55,19 @@ public abstract class AbstractRobustnessTestRunner {
             RobustnessException {
         currentRobustnessTestExecution = robustnessTestExecution;
         try {
+            if (environmentController != null)
+                environmentController.setUp();
             dataInterception.turnOn(this::handleDataIntercepted);
             var testExecution = testDriver.runTest(robustnessTestExecution.getTestExecution());
             robustnessTestExecution.setTestExecution(testExecution);
             robustnessTestExecutionRepository.save(robustnessTestExecution);
             return robustnessTestExecution;
+        } catch (EnvironmentException exc) {
+            throw new RobustnessException(exc.getMessage(), exc);
         } finally {
             dataInterception.turnOff();
+            if (environmentController != null)
+                environmentController.tearDown();
         }
     }
 

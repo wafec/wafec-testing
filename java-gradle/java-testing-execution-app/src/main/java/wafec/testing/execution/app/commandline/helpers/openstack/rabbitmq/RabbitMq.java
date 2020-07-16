@@ -1,4 +1,4 @@
-package wafec.testing.execution.helpers.openstack.rabbitmq;
+package wafec.testing.execution.app.commandline.helpers.openstack.rabbitmq;
 
 import picocli.CommandLine.*;
 

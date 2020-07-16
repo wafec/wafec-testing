@@ -21,4 +21,9 @@ public class ServerUtils {
                 .map(Server::getTaskState)
                 .equals(Optional.ofNullable(b).map(Server::getTaskState));
     }
+
+    public static String dumpState(Server a) {
+        return String.format("Name: %s, PowerState: %s, VmState: %s, Status: %s, TaskState: %s",
+                a.getName(), a.getPowerState(), a.getVmState(), a.getStatus(), a.getTaskState());
+    }
 }

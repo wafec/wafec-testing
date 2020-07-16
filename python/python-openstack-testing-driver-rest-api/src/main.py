@@ -1,9 +1,10 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flavors import flavors_api
 from images import images_api
 from networks import networks_api
 from servers import servers_api
 from volumes import volumes_api
+import datetime
 
 app = Flask(__name__)
 
@@ -19,6 +20,14 @@ app.register_blueprint(volumes_api, url_prefix='/api/cinder/volumes')
 @app.route('/')
 def hello():
     return 'Hello World!'
+
+
+@app.route('/health-check')
+def health_check():
+    return jsonify({
+        "status": "up",
+        "date": datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+    }), 201
 
 
 if __name__ == '__main__':

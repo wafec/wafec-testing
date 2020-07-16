@@ -15,17 +15,22 @@ import wafec.testing.execution.robustness.RobustnessTestRepository;
 import wafec.testing.execution.robustness.SameResultTamper;
 import wafec.testing.support.rabbitmq.RabbitMqDataInterception;
 import wafec.testing.support.rabbitmq.management.RabbitMqManagementClient;
+import wafec.testing.support.virtualbox.VirtualBoxController;
+import wafec.testing.support.virtualbox.VirtualBoxMachine;
+import wafec.testing.support.virtualbox.VirtualBoxMachineRepository;
 
 @Configuration
 @EnableJpaRepositories(basePackageClasses = {
         TestCaseRepository.class,
         KeyRepository.class,
-        RobustnessTestRepository.class
+        RobustnessTestRepository.class,
+        VirtualBoxMachineRepository.class
 })
 @EntityScan(basePackageClasses = {
         TestCase.class,
         Key.class,
-        RobustnessTest.class
+        RobustnessTest.class,
+        VirtualBoxMachine.class
 })
 @ComponentScan(basePackageClasses = {
         App.class,
@@ -33,7 +38,8 @@ import wafec.testing.support.rabbitmq.management.RabbitMqManagementClient;
         TestOutputMapper.class,
         OpenStackRobustnessTestRunner.class,
         RabbitMqDataInterception.class,
-        SameResultTamper.class
+        SameResultTamper.class,
+        VirtualBoxController.class
 })
 @EnableFeignClients(basePackageClasses = {
         FlavorClient.class,
