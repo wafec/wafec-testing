@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class IllegalResourceStateException extends OpenStackTestDriverException {
+public class IllegalResourceStateException extends OpenStackTestDriverExecutionException {
     @Getter
     private String resourceName;
 

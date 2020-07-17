@@ -5,14 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import picocli.CommandLine.*;
-import wafec.testing.execution.EnvironmentController;
-import wafec.testing.execution.TestCase;
-import wafec.testing.execution.TestCaseRepository;
+import wafec.testing.execution.*;
+import wafec.testing.execution.openstack.OpenStackTestDriverExecutionException;
 import wafec.testing.execution.openstack.robustness.OpenStackRobustnessTestRunner;
-import wafec.testing.execution.robustness.RobustnessTest;
-import wafec.testing.execution.robustness.RobustnessTestExecution;
-import wafec.testing.execution.robustness.RobustnessTestExecutionRepository;
-import wafec.testing.execution.robustness.RobustnessTestRepository;
+import wafec.testing.execution.robustness.*;
 import wafec.testing.support.virtualbox.VirtualBoxController;
 
 import java.util.concurrent.Callable;
@@ -32,6 +28,8 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
 
     @Option(names = { "-e", "--environment" }, paramLabel = "ENVIRONMENT-ID")
     private long environmentId = -1;
+    @Option(names = { "-x", "--repeat" })
+    private int repeat = 1;
 
     @Autowired
     private OpenStackRobustnessTestRunner openStackRobustnessTestRunner;
@@ -61,16 +59,21 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
         } else {
             throw new IllegalStateException();
         }
-        logger.info(String.format("BEGIN robustness-test-id=%d, test-case-id=%d, scan=%s",
-                robustnessTest.getId(), robustnessTest.getTestCase().getId(), scan));
         EnvironmentController environmentController = null;
         if (environmentId != -1) {
             environmentController = context.getBean(VirtualBoxController.class, environmentId);
         }
         openStackRobustnessTestRunner.setEnvironmentController(environmentController);
-        openStackRobustnessTestRunner.manage(robustnessTest, scan);
-        logger.info(String.format("  END robustness-test-id=%d, test-case-id=%d, scan=%s",
-                robustnessTest.getId(), robustnessTest.getTestCase().getId(), scan));
+        for (int i = 0; i < repeat; i++) {
+            logger.info(String.format("BEGIN X: %d", i + 1));
+            try {
+                openStackRobustnessTestRunner.manage(robustnessTest, scan);
+            } catch (OpenStackTestDriverExecutionException |
+                     PreConditionViolationException exc) {
+                logger.error(exc.getMessage(), exc);
+            }
+            logger.info(String.format("END   X: %d", i + 1));
+        }
         return 0;
     }
 }

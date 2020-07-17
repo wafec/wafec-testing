@@ -1,6 +1,9 @@
 package wafec.testing.execution.robustness;
 
 import lombok.Setter;
+import org.apache.commons.lang3.time.StopWatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import wafec.testing.execution.*;
 
@@ -22,6 +25,8 @@ public abstract class AbstractRobustnessTestRunner {
     protected RobustnessTestExecution currentRobustnessTestExecution;
     @Setter
     protected EnvironmentController environmentController;
+
+    Logger logger = LoggerFactory.getLogger(AbstractRobustnessTestRunner.class);
 
     public AbstractRobustnessTestRunner(AbstractTestDriver testDriver,
                                         DataInterception dataInterception,
@@ -53,6 +58,9 @@ public abstract class AbstractRobustnessTestRunner {
             TestDataValueNotFoundException,
             PreConditionViolationException,
             RobustnessException {
+        logger.info("Start");
+        var stopWatch = new StopWatch();
+        stopWatch.start();
         currentRobustnessTestExecution = robustnessTestExecution;
         try {
             if (environmentController != null)
@@ -68,6 +76,8 @@ public abstract class AbstractRobustnessTestRunner {
             dataInterception.turnOff();
             if (environmentController != null)
                 environmentController.tearDown();
+            stopWatch.stop();
+            logger.info(String.format("End %s", stopWatch.toString()));
         }
     }
 

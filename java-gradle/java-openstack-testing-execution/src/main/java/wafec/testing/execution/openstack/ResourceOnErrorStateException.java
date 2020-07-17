@@ -1,6 +1,6 @@
 package wafec.testing.execution.openstack;
 
-public class ResourceOnErrorStateException extends OpenStackTestDriverException {
+public class ResourceOnErrorStateException extends OpenStackTestDriverExecutionException {
     public ResourceOnErrorStateException() {
         super();
     }

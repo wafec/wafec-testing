@@ -14,9 +14,11 @@ import wafec.testing.execution.robustness.DataListener;
 import wafec.testing.support.rabbitmq.management.*;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 @Component
@@ -51,7 +53,21 @@ public class RabbitMqDataInterception implements DataInterception {
         connectionFactory.setUsername(username);
         connectionFactory.setPassword(password);
         connectionFactory.setPort(port);
-        connection = connectionFactory.newConnection();
+        connectionFactory.setConnectionTimeout((int)TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS));
+        connection = null;
+        int i = 0;
+        while (connection == null && i < 10) {
+            try {
+                Thread.sleep(500);
+                connection = connectionFactory.newConnection();
+            } catch (ConnectException | TimeoutException | InterruptedException exc) {
+                logger.warn(exc.getMessage());
+            } finally {
+                i++;
+            }
+        }
+        if (connection == null)
+            throw new TimeoutException("Could not connect");
     }
 
     private void addCustomBinding(RabbitMqBiBindingData customBinding) {

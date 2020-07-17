@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface VirtualBoxMachineRepository extends CrudRepository<VirtualBoxMachine, Long> {
-    @Query("SELECT vm FROM VirtualBoxMachine WHERE vm.virtualBoxMachineGroup = ?1")
+    @Query("SELECT vm FROM VirtualBoxMachine vm WHERE vm.virtualBoxMachineGroup = ?1")
     List<VirtualBoxMachine> findByVirtualBoxMachineGroup(VirtualBoxMachineGroup virtualBoxMachineGroup);
 }

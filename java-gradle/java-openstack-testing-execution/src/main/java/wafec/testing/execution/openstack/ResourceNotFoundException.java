@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResourceNotFoundException extends OpenStackTestDriverException {
+public class ResourceNotFoundException extends OpenStackTestDriverExecutionException {
     @Getter
     private String resourceName;
 
