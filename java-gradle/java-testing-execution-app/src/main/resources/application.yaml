@@ -20,3 +20,6 @@ wafec:
           password: "supersecret"
           host: "controller"
           port: 5672
+    core:
+      analysis:
+        json-builder: no

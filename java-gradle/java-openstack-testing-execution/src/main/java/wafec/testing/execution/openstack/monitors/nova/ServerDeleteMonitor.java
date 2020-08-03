@@ -14,7 +14,7 @@ public class ServerDeleteMonitor extends AbstractServerMonitor {
 
     public ServerDeleteMonitor() {
         super();
-        timeout = TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS);
+        timeout = TimeUnit.MILLISECONDS.convert(2, TimeUnit.MINUTES);
     }
 
     @Override

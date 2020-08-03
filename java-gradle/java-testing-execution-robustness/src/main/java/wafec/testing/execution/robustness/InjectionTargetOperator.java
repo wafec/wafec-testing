@@ -18,9 +18,10 @@ public class InjectionTargetOperator {
     private String injectionKey;
     private boolean used;
     private boolean ignored;
+    @Column(name = "description", length = 4000)
     private String description;
-    @Column(name = "field_value")
+    @Column(name = "field_value", length = 500000)
     private String fieldValue;
-    @Column(name = "injection_value")
+    @Column(name = "injection_value", length = 500000)
     private String injectionValue;
 }

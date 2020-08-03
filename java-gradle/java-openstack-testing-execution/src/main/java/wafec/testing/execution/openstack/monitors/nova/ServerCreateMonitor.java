@@ -11,7 +11,7 @@ public class ServerCreateMonitor extends AbstractServerMonitor {
 
     public ServerCreateMonitor() {
         super();
-        timeout = TimeUnit.MILLISECONDS.convert(3, TimeUnit.MINUTES);
+        timeout = TimeUnit.MILLISECONDS.convert(10, TimeUnit.MINUTES);
     }
 
     @Override

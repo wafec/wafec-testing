@@ -21,6 +21,8 @@ public class InjectionTarget {
     private boolean discard;
     @Column(length = 15000)
     private String description;
+    @Column(length = 500, name = "data_type")
+    private String dataType;
 
     public String getQualifiedDescription() {
         return String.format("%s.%s", sourceKey, context);

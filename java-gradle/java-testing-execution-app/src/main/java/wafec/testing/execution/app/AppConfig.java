@@ -6,6 +6,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import wafec.testing.core.AnalysisBuildJsonObject;
+import wafec.testing.core.AnalysisBuildJsonObjectRepository;
+import wafec.testing.core.JsonReBuilder;
 import wafec.testing.driver.openstack.client.*;
 import wafec.testing.execution.*;
 import wafec.testing.execution.openstack.*;
@@ -24,13 +27,15 @@ import wafec.testing.support.virtualbox.VirtualBoxMachineRepository;
         TestCaseRepository.class,
         KeyRepository.class,
         RobustnessTestRepository.class,
-        VirtualBoxMachineRepository.class
+        VirtualBoxMachineRepository.class,
+        AnalysisBuildJsonObjectRepository.class
 })
 @EntityScan(basePackageClasses = {
         TestCase.class,
         Key.class,
         RobustnessTest.class,
-        VirtualBoxMachine.class
+        VirtualBoxMachine.class,
+        AnalysisBuildJsonObject.class
 })
 @ComponentScan(basePackageClasses = {
         App.class,
@@ -39,7 +44,8 @@ import wafec.testing.support.virtualbox.VirtualBoxMachineRepository;
         OpenStackRobustnessTestRunner.class,
         RabbitMqDataInterception.class,
         SameResultTamper.class,
-        VirtualBoxController.class
+        VirtualBoxController.class,
+        JsonReBuilder.class
 })
 @EnableFeignClients(basePackageClasses = {
         FlavorClient.class,

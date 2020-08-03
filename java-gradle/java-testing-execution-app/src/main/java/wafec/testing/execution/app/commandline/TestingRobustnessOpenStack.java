@@ -68,7 +68,7 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
             logger.info(String.format("BEGIN X: %d", i + 1));
             try {
                 openStackRobustnessTestRunner.manage(robustnessTest, scan);
-            } catch (OpenStackTestDriverExecutionException |
+            } catch (TestDriverException |
                      PreConditionViolationException exc) {
                 logger.error(exc.getMessage(), exc);
             }

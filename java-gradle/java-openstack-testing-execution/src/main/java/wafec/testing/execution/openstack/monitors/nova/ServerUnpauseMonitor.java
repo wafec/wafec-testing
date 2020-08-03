@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 public class ServerUnpauseMonitor extends AbstractServerMonitor {
     public ServerUnpauseMonitor() {
         super();
-        timeout = TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS);
+        timeout = TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
     }
 
     @Override

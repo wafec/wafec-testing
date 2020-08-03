@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import wafec.testing.core.JsonReBuilder;
 import wafec.testing.core.JsonUtils;
@@ -21,6 +22,8 @@ import java.io.Writer;
 public class OpenStackRobustnessTestRunner extends AbstractRobustnessTestRunner {
     @Autowired
     private OneRoundTamper dataTamper;
+    @Autowired
+    private ApplicationContext applicationContext;
 
     public OpenStackRobustnessTestRunner(OpenStackTestDriver openStackTestDriver,
                                          RabbitMqDataInterception rabbitMqDataInterception,
@@ -64,7 +67,7 @@ public class OpenStackRobustnessTestRunner extends AbstractRobustnessTestRunner 
             final var methodNode = messageNode.get("method");
             var argsNode = messageNode.get("args");
             if (methodNode != null && argsNode != null) {
-                var jsonReBuilder = new JsonReBuilder(argsNode);
+                var jsonReBuilder = applicationContext.getBean(JsonReBuilder.class, argsNode);
                 jsonReBuilder.rebuild((object) -> {
                     return mapper.convertValue(
                             dataTamper.adulterate(JsonUtils.getValue(object.getResult()),

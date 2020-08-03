@@ -72,6 +72,7 @@ public abstract class AbstractDefaultTamper implements DataTamper {
             injectionTarget.setRobustnessTest(robustnessTest);
             injectionTarget.setSourceKey(sourceKey);
             injectionTarget.setContext(context);
+            onInjectionTargetCreated(injectionTarget, data, sourceKey, context, robustnessTestExecution);
         }
         injectionTarget.setMonitorCount(injectionTarget.getMonitorCount() + 1);
         injectionTargetRepository.save(injectionTarget);
@@ -114,4 +115,9 @@ public abstract class AbstractDefaultTamper implements DataTamper {
 
     protected abstract Object willAdulterate(Object data, String sourceKey, String context, RobustnessTestExecution robustnessTestExecution,
                                              InjectionFault injectionFault);
+
+    protected void onInjectionTargetCreated(InjectionTarget injectionTarget, Object data, String sourceKey,
+                                                     String context, RobustnessTestExecution robustnessTestExecution) {
+        injectionTarget.setDataType("object");
+    }
 }

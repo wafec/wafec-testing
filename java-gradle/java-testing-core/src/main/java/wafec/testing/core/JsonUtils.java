@@ -6,6 +6,9 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class JsonUtils {
@@ -29,6 +32,15 @@ public class JsonUtils {
             ArrayList<Object> result = new ArrayList<>();
             for (int i = 0; i < node.size(); i++)
                 result.add(getValue(node.get(i)));
+            return result;
+        }
+        if (node instanceof ObjectNode) {
+            Map<String, Object> result = new HashMap<>();
+            Iterator<String> fieldNames = node.fieldNames();
+            while (fieldNames.hasNext()) {
+                String fieldName = fieldNames.next();
+                result.put(fieldName, node.get(fieldName));
+            }
             return result;
         }
         return node;

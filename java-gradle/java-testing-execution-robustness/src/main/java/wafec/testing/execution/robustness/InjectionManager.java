@@ -5,14 +5,22 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import wafec.testing.core.JsonSerializationUtils;
-import wafec.testing.execution.robustness.booleans.BooleanOperator;
-import wafec.testing.execution.robustness.booleans.BooleanOperatorUtils;
-import wafec.testing.execution.robustness.integers.IntegerOperator;
-import wafec.testing.execution.robustness.integers.IntegerOperatorUtils;
-import wafec.testing.execution.robustness.strings.StringOperator;
-import wafec.testing.execution.robustness.strings.StringOperatorUtils;
+import wafec.testing.execution.robustness.operators.jsonBased.booleans.BooleanOperator;
+import wafec.testing.execution.robustness.operators.jsonBased.booleans.BooleanOperatorUtils;
+import wafec.testing.execution.robustness.operators.jsonBased.doubles.DoubleOperator;
+import wafec.testing.execution.robustness.operators.jsonBased.doubles.DoubleOperatorUtils;
+import wafec.testing.execution.robustness.operators.jsonBased.integers.IntegerOperator;
+import wafec.testing.execution.robustness.operators.jsonBased.integers.IntegerOperatorUtils;
+import wafec.testing.execution.robustness.operators.jsonBased.lists.ListOperator;
+import wafec.testing.execution.robustness.operators.jsonBased.lists.ListOperatorUtils;
+import wafec.testing.execution.robustness.operators.jsonBased.maps.MapOperator;
+import wafec.testing.execution.robustness.operators.jsonBased.maps.MapOperatorUtils;
+import wafec.testing.execution.robustness.operators.jsonBased.strings.StringOperator;
+import wafec.testing.execution.robustness.operators.jsonBased.strings.StringOperatorUtils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -26,10 +34,21 @@ public class InjectionManager {
     private RobustnessTestExecutionRepository robustnessTestExecutionRepository;
     @Autowired
     private InjectionTargetRepository injectionTargetRepository;
+    @Autowired
+    private InjectionTargetManagedRepository injectionTargetManagedRepository;
 
     private double usagePercentage = 1.0;
     private InjectionTargetOperator currentInjectionTargetOperator;
     private ReentrantLock objectLock = new ReentrantLock();
+
+    public static final String INTEGER = "integer";
+    public static final String DOUBLE = "double";
+    public static final String BOOLEAN = DataTamper.BOOLEAN;
+    public static final String LIST = DataTamper.LIST;
+    public static final String OBJECT = DataTamper.OBJECT;
+    public static final String MAP = DataTamper.MAP;
+    public static final String NULL = "null";
+    public static final String STRING = DataTamper.STRING;
 
     Logger logger = LoggerFactory.getLogger(InjectionManager.class);
 
@@ -39,6 +58,72 @@ public class InjectionManager {
         } else {
             throw new IllegalArgumentException("Must accept between 0.1 and 1.0");
         }
+    }
+
+    private String getMutationDataType(Object data) {
+        if (data == null)
+            return NULL;
+
+        if (BooleanOperatorUtils.isApplicable(data)) {
+            return BOOLEAN;
+        } else if (StringOperatorUtils.isApplicable(data)) {
+            return STRING;
+        } else if (IntegerOperatorUtils.isApplicable(data)) {
+            return INTEGER;
+        } else if (DoubleOperatorUtils.isApplicable(data)) {
+            return DOUBLE;
+        } else if (ListOperatorUtils.isApplicable(data)) {
+            return LIST;
+        } else if (MapOperatorUtils.isApplicable(data)) {
+            return MAP;
+        } else {
+            return OBJECT;
+        }
+    }
+
+    public void defineInjectionTarget(Object data, InjectionTarget injectionTarget) {
+        if (injectionTarget == null)
+            throw new IllegalArgumentException("injectionTarget must be instantiated");
+        injectionTarget.setDataType(getMutationDataType(data));
+        List operators = null;
+        List<InjectionTargetManaged> managedList = injectionTargetManagedRepository.findByInjectionTarget(injectionTarget);
+        switch (injectionTarget.getDataType()) {
+            case BOOLEAN:
+                operators = BooleanOperatorUtils.getOperators();
+                break;
+            case LIST:
+                operators = ListOperatorUtils.getOperators();
+                break;
+            case INTEGER:
+                operators = IntegerOperatorUtils.getOperators();
+                break;
+            case DOUBLE:
+                operators = DoubleOperatorUtils.getOperators();
+                break;
+            case STRING:
+                operators = StringOperatorUtils.getOperators();
+                break;
+            case MAP:
+                operators = MapOperatorUtils.getOperators();
+                break;
+        }
+
+        managedList.forEach(m -> m.setInUse(false));
+        if (operators != null) {
+            for (var operator : operators) {
+                if (managedList.stream().anyMatch(m -> m.getInjectorName().equals(operator.getClass().getSimpleName()))) {
+                    var managed = managedList.stream().filter(m -> m.getInjectorName().equals(operator.getClass().getSimpleName())).findFirst().get();
+                    managed.setInUse(true);
+                } else {
+                    InjectionTargetManaged managed = new InjectionTargetManaged();
+                    managed.setInUse(true);
+                    managed.setInjectionTarget(injectionTarget);
+                    managed.setInjectorName(operator.getClass().getSimpleName());
+                    managedList.add(managed);
+                }
+            }
+        }
+        injectionTargetManagedRepository.saveAll(managedList);
     }
 
     public Object inject(Object data, InjectionFault injectionFault) {
@@ -53,6 +138,12 @@ public class InjectionManager {
                     dataResult = injectString(data, injectionFault);
                 } else if (IntegerOperatorUtils.isApplicable(data)) {
                     dataResult = injectInteger(data, injectionFault);
+                } else if (ListOperatorUtils.isApplicable(data)) {
+                    dataResult = injectList(data, injectionFault);
+                } else if (DoubleOperatorUtils.isApplicable(data)) {
+                    dataResult = injectDouble(data, injectionFault);
+                } else if (MapOperatorUtils.isApplicable(data)) {
+                    dataResult = injectMap(data, injectionFault);
                 } else {
                     injectionFault.setUsed(false);
                     injectionTarget.setDiscard(true);
@@ -85,25 +176,47 @@ public class InjectionManager {
             CouldNotApplyOperatorException, UnexpectedInjectorException {
         var operators = BooleanOperatorUtils
                 .getOperators();
-        GenericTypeOperator operator = chooseOperator(data, injectionFault, operators.stream().map(o -> (GenericTypeOperator)o).collect(Collectors.toList()));
+        GenericTypeOperator operator = chooseOperator(data, injectionFault, operators);
         return ((BooleanOperator) operator).mutateBoolean((Boolean) data);
     }
 
     private Object injectString(Object data, InjectionFault injectionFault) throws
             CouldNotApplyOperatorException, UnexpectedInjectorException {
         var operators = StringOperatorUtils.getOperators();
-        GenericTypeOperator operator = chooseOperator(data, injectionFault, operators.stream().map(o -> (GenericTypeOperator)o).collect(Collectors.toList()));
+        GenericTypeOperator operator = chooseOperator(data, injectionFault, operators);
         return ((StringOperator) operator).mutateString((String) data);
     }
 
     private Object injectInteger(Object data, InjectionFault injectionFault) throws
             CouldNotApplyOperatorException, UnexpectedInjectorException {
         var operators = IntegerOperatorUtils.getOperators();
-        GenericTypeOperator operator = chooseOperator(data, injectionFault, operators.stream().map(o -> (GenericTypeOperator)o).collect(Collectors.toList()));
+        GenericTypeOperator operator = chooseOperator(data, injectionFault, operators);
         return ((IntegerOperator)operator).mutateInteger((Integer)data);
     }
 
-    private GenericTypeOperator chooseOperator(Object data, InjectionFault injectionFault, List<GenericTypeOperator> operators) throws
+    private Object injectList(Object data, InjectionFault injectionFault) throws
+            CouldNotApplyOperatorException, UnexpectedInjectorException {
+        var operators = ListOperatorUtils.getOperators();
+        GenericTypeOperator operator = chooseOperator(data, injectionFault, operators);
+        return ((ListOperator) operator).mutateList((List) data);
+    }
+
+    private Object injectDouble(Object data, InjectionFault injectionFault) throws
+            CouldNotApplyOperatorException, UnexpectedInjectorException {
+        var operators = DoubleOperatorUtils.getOperators();
+        GenericTypeOperator operator = chooseOperator(data, injectionFault, operators);
+        return ((DoubleOperator) operator).mutateDouble((Double) data);
+    }
+
+    private Object injectMap(Object data, InjectionFault injectionFault) throws
+            CouldNotApplyOperatorException, UnexpectedInjectorException {
+        var operators = MapOperatorUtils.getOperators();
+        GenericTypeOperator operator = chooseOperator(data, injectionFault, operators);
+        return ((MapOperator) operator).mutateMap((Map<String, Object>) data);
+    }
+
+    private <T extends GenericTypeOperator> GenericTypeOperator chooseOperator(Object data, InjectionFault injectionFault,
+                                                                               List<T> operators) throws
             UnexpectedInjectorException {
         var injectionTarget = injectionFault.getInjectionTarget();
         var robustnessTestExecution = injectionFault.getRobustnessTestExecution();

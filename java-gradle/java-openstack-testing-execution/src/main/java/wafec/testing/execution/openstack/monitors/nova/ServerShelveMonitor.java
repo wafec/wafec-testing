@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 public class ServerShelveMonitor extends AbstractServerMonitor {
     public ServerShelveMonitor() {
         super();
-        timeout = TimeUnit.MILLISECONDS.convert(4, TimeUnit.MINUTES);
+        timeout = TimeUnit.MILLISECONDS.convert(10, TimeUnit.MINUTES);
     }
 
     @Override

@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 public class ServerMigrateMonitor extends AbstractServerMonitor {
     public ServerMigrateMonitor() {
         super();
-        timeout = TimeUnit.MILLISECONDS.convert(4, TimeUnit.MINUTES);
+        timeout = TimeUnit.MILLISECONDS.convert(10, TimeUnit.MINUTES);
     }
 
     @Override

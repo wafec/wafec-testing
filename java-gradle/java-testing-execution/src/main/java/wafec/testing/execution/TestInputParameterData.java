@@ -21,6 +21,6 @@ public class TestInputParameterData {
     @JoinColumn(columnDefinition = "test_input_parameter_id", referencedColumnName = "id")
     private TestInputParameter testInputParameter;
     @Lob
-    @Column(name = "data", length = 50000)
+    @Column(name = "data", length = 500000)
     private String data;
 }

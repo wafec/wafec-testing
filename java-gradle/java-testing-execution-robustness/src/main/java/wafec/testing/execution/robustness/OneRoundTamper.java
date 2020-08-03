@@ -21,4 +21,9 @@ public class OneRoundTamper extends AbstractDefaultTamper {
     protected Object willAdulterate(Object data, String sourceKey, String context, RobustnessTestExecution robustnessTestExecution, InjectionFault injectionFault) {
         return injectionManager.inject(data, injectionFault);
     }
+
+    @Override
+    protected void onInjectionTargetCreated(InjectionTarget injectionTarget, Object data, String sourceKey, String context, RobustnessTestExecution robustnessTestExecution) {
+        injectionManager.defineInjectionTarget(data, injectionTarget);
+    }
 }

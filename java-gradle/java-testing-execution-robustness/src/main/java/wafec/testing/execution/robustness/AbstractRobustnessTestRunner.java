@@ -58,7 +58,8 @@ public abstract class AbstractRobustnessTestRunner {
             TestDataValueNotFoundException,
             PreConditionViolationException,
             RobustnessException {
-        logger.info("Start");
+        var robustnessTest = robustnessTestExecution.getRobustnessTest();
+        logger.info(String.format("Start #%d", robustnessTest.getId()));
         var stopWatch = new StopWatch();
         stopWatch.start();
         currentRobustnessTestExecution = robustnessTestExecution;
@@ -77,7 +78,7 @@ public abstract class AbstractRobustnessTestRunner {
             if (environmentController != null)
                 environmentController.tearDown();
             stopWatch.stop();
-            logger.info(String.format("End %s", stopWatch.toString()));
+            logger.info(String.format("End #%d %s", robustnessTest.getId(), stopWatch.toString()));
         }
     }
 
