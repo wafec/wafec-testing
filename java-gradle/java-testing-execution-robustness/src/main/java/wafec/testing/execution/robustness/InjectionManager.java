@@ -81,9 +81,11 @@ public class InjectionManager {
         }
     }
 
-    public void defineInjectionTarget(Object data, InjectionTarget injectionTarget) {
+    public void updateByInjectionTarget(Object data, InjectionTarget injectionTarget) {
         if (injectionTarget == null)
             throw new IllegalArgumentException("injectionTarget must be instantiated");
+        if (injectionTarget.isDiscard())
+            return;
         injectionTarget.setDataType(getMutationDataType(data));
         List operators = null;
         List<InjectionTargetManaged> managedList = injectionTargetManagedRepository.findByInjectionTarget(injectionTarget);
@@ -111,14 +113,16 @@ public class InjectionManager {
         managedList.forEach(m -> m.setInUse(false));
         if (operators != null) {
             for (var operator : operators) {
-                if (managedList.stream().anyMatch(m -> m.getInjectorName().equals(operator.getClass().getSimpleName()))) {
-                    var managed = managedList.stream().filter(m -> m.getInjectorName().equals(operator.getClass().getSimpleName())).findFirst().get();
+                GenericTypeOperator genericOperator = (GenericTypeOperator) operator;
+                if (managedList.stream().anyMatch(m -> m.getInjectorName().equals(genericOperator.getInjectionKey()))) {
+                    var managed = managedList.stream().filter(m -> m.getInjectorName().equals(genericOperator.getInjectionKey())).findFirst()
+                            .orElseThrow();
                     managed.setInUse(true);
                 } else {
                     InjectionTargetManaged managed = new InjectionTargetManaged();
                     managed.setInUse(true);
                     managed.setInjectionTarget(injectionTarget);
-                    managed.setInjectorName(operator.getClass().getSimpleName());
+                    managed.setInjectorName(genericOperator.getInjectionKey());
                     managedList.add(managed);
                 }
             }

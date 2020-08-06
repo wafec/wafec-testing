@@ -6,7 +6,9 @@ import javax.persistence.*;
 
 @Data
 @Entity
-@Table(name = "INJECTION_TARGET_OPERATOR")
+@Table(name = "INJECTION_TARGET_OPERATOR", indexes = {
+        @Index(name = "IDX_ITO_INJECTION_KEY", columnList = "injection_key")
+})
 public class InjectionTargetOperator {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "native")

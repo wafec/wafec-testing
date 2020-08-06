@@ -23,7 +23,7 @@ public class OneRoundTamper extends AbstractDefaultTamper {
     }
 
     @Override
-    protected void onInjectionTargetCreated(InjectionTarget injectionTarget, Object data, String sourceKey, String context, RobustnessTestExecution robustnessTestExecution) {
-        injectionManager.defineInjectionTarget(data, injectionTarget);
+    protected void handleInjectionTargetSaved(InjectionTarget injectionTarget, Object data, String sourceKey, String context, RobustnessTestExecution robustnessTestExecution) {
+        injectionManager.updateByInjectionTarget(data, injectionTarget);
     }
 }

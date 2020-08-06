@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name = "TEST_EXECUTION_INPUT")
@@ -23,4 +24,8 @@ public class TestExecutionInput {
     @JoinColumn(columnDefinition = "test_execution_id", referencedColumnName = "id")
     private TestExecution testExecution;
     private String status;
+    @Column(name = "started_at")
+    private Date startedAt;
+    @Column(name = "ended_at")
+    private Date endedAt;
 }

@@ -1,5 +1,6 @@
 package wafec.testing.execution.robustness;
 
+import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import java.util.Arrays;
 import java.util.Date;
 
 public abstract class AbstractRobustnessTestRunner {
+    @Getter
     protected final AbstractTestDriver testDriver;
     protected final DataInterception dataInterception;
     protected final DataParser dataParser;

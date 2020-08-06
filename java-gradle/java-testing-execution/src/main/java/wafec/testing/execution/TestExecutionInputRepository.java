@@ -10,4 +10,6 @@ public interface TestExecutionInputRepository extends CrudRepository<TestExecuti
     List<TestExecutionInput> findByTestInputAndTestExecution(TestInput testInput, TestExecution testExecution);
     @Query("SELECT tei FROM TestExecutionInput tei, TestInput ti WHERE tei.testExecution = ?1 AND tei.testInput = ti AND ti.important is true")
     List<TestExecutionInput> findByTestExecutionAndImportant(TestExecution testExecution);
+    @Query("SELECT tei FROM TestExecutionInput tei WHERE tei.testExecution = ?1")
+    List<TestExecutionInput> findByTestExecution(TestExecution testExecution);
 }

@@ -4,7 +4,9 @@ import lombok.Data;
 
 import javax.persistence.*;
 
-@Table(name = "INJECTION_TARGET_MANAGED")
+@Table(name = "INJECTION_TARGET_MANAGED", indexes = {
+        @Index(name = "IDX_ITM_INJECTOR_NAME", columnList = "injector_name")
+})
 @Entity
 @Data
 public class InjectionTargetManaged {

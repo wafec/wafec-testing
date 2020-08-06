@@ -1,5 +1,6 @@
 package wafec.testing.execution.app.commandline;
 
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,8 +10,12 @@ import wafec.testing.execution.*;
 import wafec.testing.execution.openstack.OpenStackTestDriverExecutionException;
 import wafec.testing.execution.openstack.robustness.OpenStackRobustnessTestRunner;
 import wafec.testing.execution.robustness.*;
+import wafec.testing.execution.utils.SchOutputCommandGroup;
+import wafec.testing.execution.utils.SchOutputCommandGroupRepository;
 import wafec.testing.support.virtualbox.VirtualBoxController;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 @Command(name = "openstack")
@@ -30,6 +35,8 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
     private long environmentId = -1;
     @Option(names = { "-x", "--repeat" })
     private int repeat = 1;
+    @Option(names = { "-h", "--sch-group" }, paramLabel = "SCH-GROUP-ID")
+    private Long[] schGroupIds;
 
     @Autowired
     private OpenStackRobustnessTestRunner openStackRobustnessTestRunner;
@@ -39,6 +46,8 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
     private RobustnessTestExecutionRepository robustnessTestExecutionRepository;
     @Autowired
     private RobustnessTestRepository robustnessTestRepository;
+    @Autowired
+    private SchOutputCommandGroupRepository schOutputCommandGroupRepository;
 
     @Autowired
     private ApplicationContext context;
@@ -63,7 +72,13 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
         if (environmentId != -1) {
             environmentController = context.getBean(VirtualBoxController.class, environmentId);
         }
+        if (schGroupIds != null) {
+            var schGroups = schOutputCommandGroupRepository.findAllById(Arrays.asList(schGroupIds));
+            openStackRobustnessTestRunner.getTestDriver().setSchOutputCommandGroups(Lists.newArrayList(schGroups));
+        }
         openStackRobustnessTestRunner.setEnvironmentController(environmentController);
+        if (scan)
+            repeat = 1;
         for (int i = 0; i < repeat; i++) {
             logger.info(String.format("BEGIN X: %d", i + 1));
             try {

@@ -10,4 +10,6 @@ import java.util.List;
 public interface TestExecutionObservedOutputRepository extends CrudRepository<TestExecutionObservedOutput, Long> {
     @Query("SELECT o FROM TestExecutionObservedOutput o, TestExecution e WHERE o.testExecution = e AND e.testCase = ?1")
     List<TestExecutionObservedOutput> findByTestCase(TestCase testCase);
+    @Query("SELECT max(to.position) FROM TestExecutionObservedOutput teo, TestOutput to WHERE teo.testOutput = to AND teo.testExecution = ?1 AND teo.testInput = ?2")
+    int maxPositionByTestExecutionAndTestInput(TestExecution testExecution, TestInput testInput);
 }
