@@ -9,6 +9,7 @@ import java.util.Date;
 @AllArgsConstructor(staticName = "of")
 public class SchOutput {
     private String line;
-    private Date parsedAt;
+    private Date createdAt;
     private String source;
+    private boolean ignoreIfInvalid;
 }

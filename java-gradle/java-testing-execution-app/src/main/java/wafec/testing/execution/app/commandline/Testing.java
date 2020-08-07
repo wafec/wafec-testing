@@ -9,7 +9,8 @@ import picocli.CommandLine.*;
         TestingClean.class,
         TestingRobustness.class,
         TestingHelper.class,
-        TestingVirtualBox.class
+        TestingVirtualBox.class,
+        TestingSch.class
 })
 @Component
 public class Testing {

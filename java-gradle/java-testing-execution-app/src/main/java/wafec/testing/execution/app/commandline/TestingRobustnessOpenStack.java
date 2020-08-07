@@ -82,7 +82,8 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
         for (int i = 0; i < repeat; i++) {
             logger.info(String.format("BEGIN X: %d", i + 1));
             try {
-                openStackRobustnessTestRunner.manage(robustnessTest, scan);
+                var executionInfo = openStackRobustnessTestRunner.manage(robustnessTest, scan);
+                logger.info(String.format("ID: %d, Execution: %d", executionInfo.getId(), executionInfo.getTestExecution().getId()));
             } catch (TestDriverException |
                      PreConditionViolationException exc) {
                 logger.error(exc.getMessage(), exc);

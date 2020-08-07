@@ -4,6 +4,7 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,9 +57,37 @@ public class SchOutputExtractor {
                 session.disconnect();
                 if (!command.isSuppress())
                     result.addAll(Arrays.stream(buffer.toString().split("\\r?\\n"))
-                             .map(l -> SchOutput.of(l, new Date(), Optional.ofNullable(command.getSource()).orElse(SchOutputExtractor.class.getName()))).collect(Collectors.toList()));
+                             .map(l -> SchOutput.of(l,
+                                     new Date(),
+                                     Optional.ofNullable(command.getSource()).orElse(SchOutputExtractor.class.getName()),
+                                     command.isIgnoreIfInvalid()))
+                            .collect(Collectors.toList()));
+                if (!StringUtils.isEmpty(command.getDatePattern())) {
+                    result.forEach(schOutput -> {
+                        var parts = schOutput.getLine().split("\\s");
+                        if (parts.length > 1) {
+                            String dateStr = parts[0] + " " + parts[1];
+                            try {
+                                String datePattern = "yyyy-MM-dd HH:mm:ss.SSS";
+                                if (!command.getDatePattern().equals("default"))
+                                    datePattern = command.getDatePattern();
+                                SimpleDateFormat formatter = new SimpleDateFormat(datePattern);
+                                var date = formatter.parse(dateStr);
+                                schOutput.setCreatedAt(date);
+                            } catch (ParseException exc) {
+                                schOutput.setCreatedAt(null);
+                            }
+                        }
+                    });
+                    if (command.isIgnoreOnError())
+                        result = result.stream().filter(schOutput -> schOutput.getCreatedAt() != null)
+                                .collect(Collectors.toList());
+                }
             } catch (JSchException | IOException exc) {
                 logger.error(exc.getMessage(), exc);
+                SchOutput schErrorOutput = SchOutput.of(String.format("ERROR source=%s, command=%s, message='%s'",
+                        command.getSource(), command.getCommand(), exc.getMessage()), new Date(), "sch-error", false);
+                result.add(schErrorOutput);
             }
         }
         return result;

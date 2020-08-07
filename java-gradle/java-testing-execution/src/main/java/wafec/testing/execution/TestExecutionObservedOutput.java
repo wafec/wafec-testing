@@ -7,7 +7,6 @@ import javax.persistence.*;
 @Data
 @Entity
 @Table(name = "TEST_EXECUTION_OBSERVED_OUTPUT")
-@RequiredArgsConstructor(staticName = "of")
 @NoArgsConstructor
 public class TestExecutionObservedOutput {
     @Id
@@ -18,8 +17,16 @@ public class TestExecutionObservedOutput {
     @NonNull private TestExecution testExecution;
     @ManyToOne
     @JoinColumn(columnDefinition = "test_input_id", referencedColumnName = "id")
-    @NonNull private TestInput testInput;
+    private TestInput testInput;
     @ManyToOne
     @JoinColumn(columnDefinition = "test_output_id", referencedColumnName = "id")
     @NonNull private TestOutput testOutput;
+
+    public static TestExecutionObservedOutput of(TestExecution testExecution, TestInput testInput, TestOutput testOutput) {
+        TestExecutionObservedOutput obj = new TestExecutionObservedOutput();
+        obj.setTestExecution(testExecution);
+        obj.setTestOutput(testOutput);
+        obj.setTestInput(testInput);
+        return obj;
+    }
 }

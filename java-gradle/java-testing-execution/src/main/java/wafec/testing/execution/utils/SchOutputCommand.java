@@ -18,4 +18,10 @@ public class SchOutputCommand {
     private int priority;
     private String source;
     private boolean suppress;
+    @Column(name = "date_pattern")
+    private String datePattern;
+    @Column(name = "ignore_on_error")
+    private boolean ignoreOnError;
+    @Column(name = "ignore_if_invalid")
+    private boolean ignoreIfInvalid;
 }

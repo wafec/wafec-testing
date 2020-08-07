@@ -1,0 +1,110 @@
+---
+groups:
+- id: 6
+  host: "controller"
+  username: "test"
+  password: "test-321"
+  commands:
+  - id: 6
+    command: "sudo cat /var/log/nova/nova-api.log"
+    priority: 0
+    suppress: false
+    source: "controller.nova-api"
+    ignore-on-error: true
+    ignore-if-invalid: true
+    date-pattern: "default"
+  - id: 7
+    command: "sudo cat /var/log/nova/nova-conductor.log"
+    priority: 0
+    suppress: false
+    source: "controller.nova-conductor"
+    ignore-on-error: true
+    ignore-if-invalid: true
+    date-pattern: "default"
+  - id: 8
+    command: "sudo cat /var/log/nova/nova-scheduler.log"
+    priority: 0
+    suppress: false
+    source: "controller.nova-scheduler"
+    ignore-on-error: true
+    ignore-if-invalid: true
+    date-pattern: "default"
+  - id: 9
+    command: "sudo cat /var/log/nova/nova-novncproxy.log"
+    priority: 0
+    suppress: false
+    source: "controller.nova-novncproxy.log"
+    ignore-on-error: true
+    ignore-if-invalid: true
+    date-pattern: "default"
+  - id: 10
+    command: "sudo cat /var/log/nova/nova-manage.log"
+    priority: 0
+    suppress: false
+    source: "controller.nova-manage"
+    ignore-on-error: true
+    ignore-if-invalid: true
+    date-pattern: "default"
+  - id: 11
+    command: "sudo cat /var/log/cinder/cinder-scheduler.log"
+    priority: 0
+    suppress: false
+    source: "controller.cinder-scheduler"
+    ignore-on-error: true
+    ignore-if-invalid: true
+    date-pattern: "default"
+  - id: 12
+    command: "sudo cat /var/log/neutron/neutron-server.log"
+    priority: 0
+    suppress: false
+    source: "controller.neutron-server"
+    ignore-on-error: true
+    ignore-if-invalid: true
+    date-pattern: "default"
+  - id: 13
+    command: "sudo cat /var/log/neutron/neutron-dhcp-agent.log"
+    priority: 0
+    suppress: false
+    source: "controller.neutron-dhcp-agent"
+    ignore-on-error: true
+    ignore-if-invalid: true
+    date-pattern: "default"
+- id: 7
+  host: "compute1"
+  username: "test"
+  password: "test-321"
+  commands:
+  - id: 14
+    command: "sudo cat /var/log/nova/nova-compute.log"
+    priority: 0
+    suppress: false
+    source: "compute1.nova-compute"
+    ignore-on-error: true
+    ignore-if-invalid: true
+    date-pattern: "default"
+- id: 8
+  host: "compute2"
+  username: "test"
+  password: "test-321"
+  commands:
+  - id: 15
+    command: "sudo cat /var/log/nova/nova-compute.log"
+    priority: 0
+    suppress: false
+    source: "compute2.nova-compute"
+    ignore-on-error: true
+    ignore-if-invalid: true
+    date-pattern: "default"
+- id: 9
+  host: "block1"
+  username: "test"
+  password: "test-321"
+  commands:
+  - id: 16
+    command: "sudo cat /var/log/cinder/cinder-volume.log"
+    priority: 0
+    suppress: false
+    source: "block1.cinder-volume"
+    ignore-on-error: true
+    ignore-if-invalid: true
+    date-pattern: "default"

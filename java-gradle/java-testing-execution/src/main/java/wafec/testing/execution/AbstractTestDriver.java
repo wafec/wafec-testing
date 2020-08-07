@@ -7,11 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import wafec.testing.execution.utils.SchOutputCommandGroup;
 import wafec.testing.execution.utils.SchOutputExtractor;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public abstract class AbstractTestDriver {
     public static final String SOURCE = AbstractTestDriver.class.getName();
@@ -104,39 +101,33 @@ public abstract class AbstractTestDriver {
         var testExecutionInputList = testExecutionInputRepository.findByTestExecution(testExecution);
         for (var schOutputCommandGroup : schOutputCommandGroups) {
             var result = schOutputExtractor.execute(schOutputCommandGroup);
-            for (var schOutput : result) {
-                var parts = schOutput.getLine().split("\\s");
-                Date date = null;
-                TestInput testInput = null;
+            for (int i = 0; i < result.size(); i++) {
+                var schOutput = result.get(i);
+
                 TestOutput testOutput = new TestOutput();
-                testOutput.setCreatedAt(schOutput.getParsedAt());
+                testOutput.setCreatedAt(schOutput.getCreatedAt());
                 testOutput.setOutput(schOutput.getLine());
                 testOutput.setSource(schOutput.getSource());
+                testOutput.setSourceType("sch");
                 testOutput.setPosition(0);
-                if (parts.length > 1) {
-                    String dateStr = parts[0] + " " + parts[1];
-                    try {
-                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-                        date = formatter.parse(dateStr);
-                    } catch (ParseException exc) {}
+
+                var testExecutionInput = testExecutionInputList
+                        .stream().filter(input -> testOutput.getCreatedAt().after(input.getStartedAt())
+                                                    && testOutput.getCreatedAt().before(input.getEndedAt()))
+                        .findFirst().orElse(null);
+
+                TestInput testInput = null;
+                if (testExecutionInput != null) {
+                    testInput = testExecutionInput.getTestInput();
+                    int maxPosition = testExecutionObservedOutputRepository.maxPositionByTestExecutionAndTestInput(testExecution, testInput);
+                    testOutput.setPosition(maxPosition + 1);
+                } else if (schOutput.isIgnoreIfInvalid()) {
+                    continue;
                 }
-                if (date != null) {
-                    final Date cDate = date;
-                    var testExecutionInput = testExecutionInputList
-                            .stream().filter(i -> cDate.after(i.getStartedAt()) && cDate.before(i.getEndedAt()))
-                            .findFirst().orElse(null);
-                    if (testExecutionInput != null) {
-                        testInput = testExecutionInput.getTestInput();
-                        int maxPosition = testExecutionObservedOutputRepository.maxPositionByTestExecutionAndTestInput(testExecution, testInput);
-                        testOutput.setCreatedAt(cDate);
-                        testOutput.setPosition(maxPosition + 1);
-                    }
-                }
+
                 testOutputRepository.save(testOutput);
-                TestExecutionObservedOutput testExecutionObservedOutput = new TestExecutionObservedOutput();
-                testExecutionObservedOutput.setTestInput(testInput);
-                testExecutionObservedOutput.setTestExecution(testExecution);
-                testExecutionObservedOutput.setTestOutput(testOutput);
+                TestExecutionObservedOutput testExecutionObservedOutput =
+                        TestExecutionObservedOutput.of(testExecution, testInput, testOutput);
                 testExecutionObservedOutputRepository.save(testExecutionObservedOutput);
             }
         }
