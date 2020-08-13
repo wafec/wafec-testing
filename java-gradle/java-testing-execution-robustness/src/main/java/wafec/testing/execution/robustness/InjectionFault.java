@@ -17,5 +17,8 @@ public class InjectionFault {
     @ManyToOne
     @JoinColumn(columnDefinition = "injection_target_id", referencedColumnName = "id")
     private InjectionTarget injectionTarget;
+    @ManyToOne
+    @JoinColumn(columnDefinition = "injection_target_operator_id", referencedColumnName = "id")
+    private InjectionTargetOperator injectionTargetOperator;
     private boolean used;
 }

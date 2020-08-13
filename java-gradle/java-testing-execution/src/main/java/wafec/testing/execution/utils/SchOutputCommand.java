@@ -1,12 +1,14 @@
 package wafec.testing.execution.utils;
 
 import lombok.Data;
+import lombok.ToString;
 
 import javax.persistence.*;
 
 @Data
 @Entity
 @Table(name = "SCH_OUTPUT_COMMAND")
+@ToString
 public class SchOutputCommand {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "native")

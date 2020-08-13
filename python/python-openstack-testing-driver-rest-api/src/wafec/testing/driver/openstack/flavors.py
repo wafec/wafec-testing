@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, abort
-import commons
-import mappers
-import errors
+import wafec.testing.driver.openstack.commons as commons
+import wafec.testing.driver.openstack.mappers as mappers
+import wafec.testing.driver.openstack.errors as errors
 from novaclient.exceptions import BadRequest, Conflict
 
 flavors_api = Blueprint('flavors', __name__)

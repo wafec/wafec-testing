@@ -23,7 +23,7 @@ public class InjectionTargetService {
 
     Logger logger = LoggerFactory.getLogger(InjectionTargetService.class);
 
-    public void discard(long robustnessTestId, boolean willDiscard, boolean inverse, List<String> sourceKeys) {
+    public void discard(long robustnessTestId, boolean discard, boolean inverse, List<String> sourceKeys) {
         var robustnessTestOpt = robustnessTestRepository.findById(robustnessTestId);
         if (robustnessTestOpt.isPresent()) {
             var robustnessTest = robustnessTestOpt.get();
@@ -33,16 +33,16 @@ public class InjectionTargetService {
                     var allList = injectionTargetRepository.findByRobustnessTest(robustnessTest);
                     var diffResult = CollectionUtils.subtract(allList.stream().map(InjectionTarget::getId).collect(Collectors.toList()),
                             injectionTargetList.stream().map(InjectionTarget::getId).collect(Collectors.toList()));
-                    injectionTargetList = diffResult.stream().map(id -> allList.stream().filter(t -> t.getId() == id).findFirst().get())
+                    injectionTargetList = diffResult.stream().map(id -> allList.stream().filter(t -> t.getId() == id).findFirst().orElseThrow())
                             .collect(Collectors.toList());
                 }
-                logger.info(String.format("BEGIN SourceKey '%s', Discard %s, Size: %d", sourceKey, willDiscard, injectionTargetList.size()));
+                logger.info(String.format("BEGIN SourceKey '%s', Discard %s, Size: %d", sourceKey, discard, injectionTargetList.size()));
                 for (var injectionTarget : injectionTargetList) {
-                    injectionTarget.setDiscard(willDiscard);
+                    injectionTarget.setDiscard(discard);
                     injectionTargetRepository.save(injectionTarget);
-                    logger.debug(String.format("InjectionTarget: %s, Discard: %s", injectionTarget.getQualifiedDescription(), willDiscard));
+                    logger.debug(String.format("InjectionTarget: %s, Discard: %s", injectionTarget.getQualifiedDescription(), discard));
                 }
-                logger.info(String.format("  END SourceKey '%s', Discard %s", sourceKey, willDiscard));
+                logger.info(String.format("  END SourceKey '%s', Discard %s", sourceKey, discard));
             }
         } else {
             throw new IllegalArgumentException("RobustnessTest not found");

@@ -21,13 +21,13 @@ import java.util.stream.Collectors;
 
 @Command(name = "discard")
 public class TestingRobustnessInjectionTargetDiscard implements Callable<Integer> {
-    @Option(names = { "-d", "--discard" }, defaultValue = "false")
-    private boolean discard;
     @Option(names = { "-i", "--inverse" }, defaultValue = "false")
     private boolean inverse;
-    @Parameters(paramLabel = "ROBUSTNESS-TEST-ID", index = "0")
+    @Option(names = { "-r", "--robustness-test-id" }, required = true)
     private long robustnessTestId;
-    @Parameters(paramLabel = "SOURCE-KEY", index = "1..*")
+    @Option(names = { "-n", "--negative" }, required = false)
+    private boolean negative;
+    @Parameters(paramLabel = "SOURCE-KEY", index = "0..*")
     private List<String> sourceKeys;
 
     @Autowired
@@ -37,7 +37,7 @@ public class TestingRobustnessInjectionTargetDiscard implements Callable<Integer
 
     @Override
     public Integer call() throws Exception {
-        injectionTargetService.discard(robustnessTestId, discard, inverse, sourceKeys);
+        injectionTargetService.discard(robustnessTestId, !negative, inverse, sourceKeys);
         return 0;
     }
 }

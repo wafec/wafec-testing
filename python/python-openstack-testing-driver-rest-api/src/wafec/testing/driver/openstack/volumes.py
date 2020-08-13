@@ -1,7 +1,7 @@
 from flask import request, Blueprint, jsonify
-import commons
-import mappers
-import errors
+from wafec.testing.driver.openstack import commons
+from wafec.testing.driver.openstack import mappers
+from wafec.testing.driver.openstack import errors
 from cinderclient.exceptions import BadRequest, NotFound
 
 volumes_api = Blueprint('volumes', __name__)

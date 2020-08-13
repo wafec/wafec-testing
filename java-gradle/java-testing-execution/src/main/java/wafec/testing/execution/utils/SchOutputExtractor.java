@@ -24,10 +24,12 @@ public class SchOutputExtractor {
     private Logger logger = LoggerFactory.getLogger(SchOutputExtractor.class);
 
     public List<SchOutput> execute(SchOutputCommandGroup group) {
+        logger.info("Starting getting sch outputs");
         var commands = schOutputCommandRepository.findBySchOutputCommandGroup(group);
         List<SchOutput> result = new ArrayList<>();
         JSch jsch = new JSch();
         for (var command : commands) {
+            logger.info(String.format("Run SCH %s", command.toString()));
             try {
                 Session session = jsch.getSession(group.getUsername(), group.getHost());
                 session.setPassword(group.getPasswd());
@@ -90,6 +92,7 @@ public class SchOutputExtractor {
                 result.add(schErrorOutput);
             }
         }
+        logger.info("SCH succeed");
         return result;
     }
 }

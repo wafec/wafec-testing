@@ -1,9 +1,9 @@
 from flask import Flask, jsonify
-from flavors import flavors_api
-from images import images_api
-from networks import networks_api
-from servers import servers_api
-from volumes import volumes_api
+from wafec.testing.driver.openstack.flavors import flavors_api
+from wafec.testing.driver.openstack.images import images_api
+from wafec.testing.driver.openstack.networks import networks_api
+from wafec.testing.driver.openstack.servers import servers_api
+from wafec.testing.driver.openstack.volumes import volumes_api
 import datetime
 
 app = Flask(__name__)

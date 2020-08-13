@@ -4,7 +4,7 @@ import picocli.CommandLine;
 
 @CommandLine.Command(name = "robustness", subcommands = {
         TestingRobustnessOpenStack.class,
-        TestingRobustnessInjectionTarget.class
+        TestingRobustnessInjection.class
 })
 public class TestingRobustness {
 }

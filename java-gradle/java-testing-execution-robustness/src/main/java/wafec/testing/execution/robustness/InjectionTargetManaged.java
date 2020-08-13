@@ -18,6 +18,6 @@ public class InjectionTargetManaged {
     private InjectionTarget injectionTarget;
     @Column(name = "injector_name")
     private String injectorName;
-    @Column(name = "in_use")
-    private boolean inUse;
+    @Column(name = "injection_count")
+    private Integer injectionCount;
 }

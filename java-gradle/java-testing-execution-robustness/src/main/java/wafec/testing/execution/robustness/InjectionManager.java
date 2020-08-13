@@ -18,7 +18,6 @@ import wafec.testing.execution.robustness.operators.jsonBased.maps.MapOperatorUt
 import wafec.testing.execution.robustness.operators.jsonBased.strings.StringOperator;
 import wafec.testing.execution.robustness.operators.jsonBased.strings.StringOperatorUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
@@ -81,11 +80,12 @@ public class InjectionManager {
         }
     }
 
-    public void updateByInjectionTarget(Object data, InjectionTarget injectionTarget) {
+    public void handleInjectionManaged(Object data, InjectionTarget injectionTarget) {
         if (injectionTarget == null)
             throw new IllegalArgumentException("injectionTarget must be instantiated");
         if (injectionTarget.isDiscard())
             return;
+
         injectionTarget.setDataType(getMutationDataType(data));
         List operators = null;
         List<InjectionTargetManaged> managedList = injectionTargetManagedRepository.findByInjectionTarget(injectionTarget);
@@ -110,22 +110,27 @@ public class InjectionManager {
                 break;
         }
 
-        managedList.forEach(m -> m.setInUse(false));
         if (operators != null) {
             for (var operator : operators) {
                 GenericTypeOperator genericOperator = (GenericTypeOperator) operator;
-                if (managedList.stream().anyMatch(m -> m.getInjectorName().equals(genericOperator.getInjectionKey()))) {
-                    var managed = managedList.stream().filter(m -> m.getInjectorName().equals(genericOperator.getInjectionKey())).findFirst()
-                            .orElseThrow();
-                    managed.setInUse(true);
-                } else {
+                var managedOpt = managedList.stream().filter(m -> m.getInjectorName().equals(genericOperator.getInjectionKey()))
+                        .findFirst();
+                if (managedOpt.isEmpty()) {
                     InjectionTargetManaged managed = new InjectionTargetManaged();
-                    managed.setInUse(true);
+                    managed.setInjectionCount(0);
                     managed.setInjectionTarget(injectionTarget);
                     managed.setInjectorName(genericOperator.getInjectionKey());
                     managedList.add(managed);
+                    injectionTargetManagedRepository.save(managed);
                 }
             }
+        }
+    }
+
+    private void incrementInjectionManagedCount(String injectionKey, InjectionTarget injectionTarget) {
+        var managedList = injectionTargetManagedRepository.findByInjectionTargetAndInjectorName(injectionTarget, injectionKey);
+        for (var managed : managedList) {
+            managed.setInjectionCount(managed.getInjectionCount() + 1);
         }
         injectionTargetManagedRepository.saveAll(managedList);
     }
@@ -159,6 +164,13 @@ public class InjectionManager {
                 }
                 currentInjectionTargetOperator.setInjectionValue(JsonSerializationUtils.trySerialize(dataResult, "Could not serialize"));
                 injectionTargetOperatorRepository.save(currentInjectionTargetOperator);
+
+                injectionFault.setUsed(true);
+                injectionFault.setInjectionTargetOperator(currentInjectionTargetOperator);
+                injectionFaultRepository.save(injectionFault);
+
+                incrementInjectionManagedCount(currentInjectionTargetOperator.getInjectionKey(), injectionTarget);
+
                 return dataResult;
             } else {
                 return null;

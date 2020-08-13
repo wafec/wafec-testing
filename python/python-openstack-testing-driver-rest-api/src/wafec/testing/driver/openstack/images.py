@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, abort
-import commons
-import mappers
-import errors
+from wafec.testing.driver.openstack import commons
+from wafec.testing.driver.openstack import mappers
+from wafec.testing.driver.openstack import errors
 from glanceclient.exc import Conflict, BadRequest
 import base64
 import tempfile

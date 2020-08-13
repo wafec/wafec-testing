@@ -10,6 +10,10 @@ import java.util.List;
 public interface InjectionTargetManagedRepository extends CrudRepository<InjectionTargetManaged, Long> {
     @Query("SELECT itm FROM InjectionTargetManaged itm WHERE itm.injectionTarget = ?1")
     List<InjectionTargetManaged> findByInjectionTarget(InjectionTarget injectionTarget);
-    //@Query("SELECT * FROM ")
-    //long countRemainingInUseManagedTotalByRobustnessTest(RobustnessTest robustnessTest);
+    @Query("SELECT itm FROM InjectionTargetManaged itm WHERE itm.injectionTarget = ?1 AND itm.injectorName = ?2")
+    List<InjectionTargetManaged> findByInjectionTargetAndInjectorName(InjectionTarget injectionTarget, String injectorName);
+    @Query("SELECT count (*) FROM InjectionTarget it, InjectionTargetManaged im WHERE it.robustnessTest = ?1 AND im.injectionTarget = it AND im.injectionCount = 0 AND it.discard is false")
+    long countByRobustnessTestAndInjectionCountEqualToZero(RobustnessTest robustnessTest);
+    @Query("SELECT count (*) FROM InjectionTarget it, InjectionTargetManaged im WHERE it.robustnessTest = ?1 AND im.injectionTarget = it AND im.injectionCount > 0 AND it.discard is false")
+    long countByRobustnessTestAndInjectionCountGreaterThanZero(RobustnessTest robustnessTest);
 }

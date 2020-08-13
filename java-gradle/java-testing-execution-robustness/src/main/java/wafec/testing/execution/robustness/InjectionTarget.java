@@ -23,6 +23,8 @@ public class InjectionTarget {
     private String description;
     @Column(length = 500, name = "data_type")
     private String dataType;
+    @Transient
+    private boolean firstInitialized;
 
     public String getQualifiedDescription() {
         return String.format("%s.%s", sourceKey, context);

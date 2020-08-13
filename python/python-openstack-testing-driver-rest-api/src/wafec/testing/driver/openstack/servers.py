@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
-import commons
-import mappers
-import errors
+from wafec.testing.driver.openstack import commons
+from wafec.testing.driver.openstack import mappers
+from wafec.testing.driver.openstack import errors
 from novaclient.exceptions import Conflict, BadRequest, NotFound
 
 servers_api = Blueprint('servers', __name__)
