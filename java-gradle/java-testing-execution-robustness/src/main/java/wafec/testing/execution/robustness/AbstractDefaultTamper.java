@@ -111,6 +111,9 @@ public abstract class AbstractDefaultTamper implements DataTamper {
                 }
             }
 
+            if (!injectionFault.isPersist() && !injectionFault.isUsed())
+                injectionFaultRepository.delete(injectionFault);
+
             injectionFaultRepository.save(injectionFault);
         }
 

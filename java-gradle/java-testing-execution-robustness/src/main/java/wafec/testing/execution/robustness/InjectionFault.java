@@ -21,4 +21,6 @@ public class InjectionFault {
     @JoinColumn(columnDefinition = "injection_target_operator_id", referencedColumnName = "id")
     private InjectionTargetOperator injectionTargetOperator;
     private boolean used;
+    @Transient
+    private boolean persist;
 }

@@ -154,6 +154,7 @@ public class InjectionManager {
                 } else if (MapOperatorUtils.isApplicable(data)) {
                     dataResult = injectMap(data, injectionFault);
                 } else {
+                    injectionFault.setPersist(true);
                     injectionFault.setUsed(false);
                     injectionTarget.setDiscard(true);
                     injectionTarget.setDescription(String.format("Could not handle '%s' type", data.getClass().getSimpleName()));
@@ -164,7 +165,7 @@ public class InjectionManager {
                 }
                 currentInjectionTargetOperator.setInjectionValue(JsonSerializationUtils.trySerialize(dataResult, "Could not serialize"));
                 injectionTargetOperatorRepository.save(currentInjectionTargetOperator);
-
+                
                 injectionFault.setUsed(true);
                 injectionFault.setInjectionTargetOperator(currentInjectionTargetOperator);
                 injectionFaultRepository.save(injectionFault);
