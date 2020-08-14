@@ -12,8 +12,10 @@ import wafec.testing.execution.openstack.robustness.OpenStackRobustnessTestRunne
 import wafec.testing.execution.robustness.*;
 import wafec.testing.execution.utils.SchOutputCommandGroup;
 import wafec.testing.execution.utils.SchOutputCommandGroupRepository;
+import wafec.testing.execution.utils.SchOutputCommandSetRepository;
 import wafec.testing.support.virtualbox.VirtualBoxController;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -37,6 +39,8 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
     private int repeat = 1;
     @Option(names = { "-h", "--sch-group" }, paramLabel = "SCH-GROUP-ID")
     private Long[] schGroupIds;
+    @Option(names = { "-c", "--sch-command-set" }, paramLabel = "SCH-COMMAND-SET" )
+    private Long schCommandSetId;
 
     @Autowired
     private OpenStackRobustnessTestRunner openStackRobustnessTestRunner;
@@ -48,6 +52,8 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
     private RobustnessTestRepository robustnessTestRepository;
     @Autowired
     private SchOutputCommandGroupRepository schOutputCommandGroupRepository;
+    @Autowired
+    private SchOutputCommandSetRepository schOutputCommandSetRepository;
 
     @Autowired
     private ApplicationContext context;
@@ -72,9 +78,17 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
         if (environmentId != -1) {
             environmentController = context.getBean(VirtualBoxController.class, environmentId);
         }
+        List<SchOutputCommandGroup> schOutputCommandGroups = new ArrayList<>();
         if (schGroupIds != null) {
             var schGroups = schOutputCommandGroupRepository.findAllById(Arrays.asList(schGroupIds));
-            openStackRobustnessTestRunner.getTestDriver().setSchOutputCommandGroups(Lists.newArrayList(schGroups));
+            schOutputCommandGroups.addAll(Lists.newArrayList(schGroups));
+        }
+        if (schCommandSetId != null) {
+            var schCommandSet = schOutputCommandSetRepository.findById(schCommandSetId).orElseThrow(IllegalArgumentException::new);
+            schOutputCommandGroups.addAll(schCommandSet.getSchOutputCommandGroups());
+        }
+        if (schOutputCommandGroups.size() > 0) {
+            openStackRobustnessTestRunner.getTestDriver().setSchOutputCommandGroups(schOutputCommandGroups);
         }
         openStackRobustnessTestRunner.setEnvironmentController(environmentController);
         if (scan)

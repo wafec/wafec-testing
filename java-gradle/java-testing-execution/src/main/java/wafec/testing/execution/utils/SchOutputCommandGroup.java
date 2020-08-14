@@ -3,6 +3,7 @@ package wafec.testing.execution.utils;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Data
 @Entity
@@ -14,4 +15,6 @@ public class SchOutputCommandGroup {
     private String host;
     private String username;
     private String passwd;
+    @ManyToMany(mappedBy = "schOutputCommandGroups")
+    private List<SchOutputCommandSet> schOutputCommandSets;
 }

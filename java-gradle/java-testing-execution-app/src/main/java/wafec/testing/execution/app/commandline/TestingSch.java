@@ -8,12 +8,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import picocli.CommandLine;
 import wafec.testing.execution.app.commandline.models.sch.SchConfig;
-import wafec.testing.execution.utils.SchOutputCommand;
-import wafec.testing.execution.utils.SchOutputCommandGroup;
-import wafec.testing.execution.utils.SchOutputCommandGroupRepository;
-import wafec.testing.execution.utils.SchOutputCommandRepository;
+import wafec.testing.execution.utils.*;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "sch")
@@ -25,6 +24,8 @@ public class TestingSch implements Callable<Integer> {
     SchOutputCommandGroupRepository schOutputCommandGroupRepository;
     @Autowired
     SchOutputCommandRepository schOutputCommandRepository;
+    @Autowired
+    SchOutputCommandSetRepository schOutputCommandSetRepository;
 
     Logger logger = LoggerFactory.getLogger(TestingSch.class);
 
@@ -33,6 +34,7 @@ public class TestingSch implements Callable<Integer> {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         mapper.configure(DeserializationFeature.UNWRAP_ROOT_VALUE, true);
         var config = mapper.readValue(configurationFile, SchConfig.class);
+        List<SchOutputCommandGroup> schOutputCommandGroups = new ArrayList<>();
         for (var group : config.getGroups()) {
             SchOutputCommandGroup commandGroup;
             if (group.getId() != null) {
@@ -40,6 +42,7 @@ public class TestingSch implements Callable<Integer> {
             } else {
                 commandGroup = new SchOutputCommandGroup();
             }
+            schOutputCommandGroups.add(commandGroup);
             commandGroup.setHost(group.getHost());
             commandGroup.setUsername(group.getUsername());
             commandGroup.setPasswd(group.getPassword());
@@ -64,6 +67,14 @@ public class TestingSch implements Callable<Integer> {
                 cmd.setId(command.getId());
             }
         }
+
+        SchOutputCommandSet schOutputCommandSet = null;
+        if (config.getCommandSetId() == null)
+            schOutputCommandSet = new SchOutputCommandSet();
+        else
+            schOutputCommandSet = schOutputCommandSetRepository.findById(config.getCommandSetId()).orElseGet(SchOutputCommandSet::new);
+        schOutputCommandSet.setSchOutputCommandGroups(schOutputCommandGroups);
+        schOutputCommandSetRepository.save(schOutputCommandSet);
 
         mapper.writerWithDefaultPrettyPrinter().writeValue(configurationFile, config);
 

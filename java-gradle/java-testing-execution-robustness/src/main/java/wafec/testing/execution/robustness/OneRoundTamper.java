@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class OneRoundTamper extends AbstractDefaultTamper {
     @Autowired
-    private InjectionManager injectionManager;
+    private JsonInjectionManager injectionManager;
 
     public OneRoundTamper() {
         super();

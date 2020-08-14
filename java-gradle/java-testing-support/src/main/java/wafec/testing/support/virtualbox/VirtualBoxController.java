@@ -14,11 +14,16 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import wafec.testing.execution.EnvironmentController;
 import wafec.testing.execution.EnvironmentException;
+import wafec.testing.support.virtualbox.communication.VirtualBoxCommunication;
+import wafec.testing.support.virtualbox.communication.VirtualBoxCommunicationFactory;
+import wafec.testing.support.virtualbox.communication.VirtualBoxMachineProcess;
+import wafec.testing.support.virtualbox.communication.VirtualBoxMachineProcessRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 @Component
 @Scope("prototype")
@@ -34,6 +39,9 @@ public class VirtualBoxController implements EnvironmentController {
     private VirtualBoxMachineGroupRepository virtualBoxMachineGroupRepository;
     @Autowired
     private ApplicationContext context;
+    @Autowired
+    private VirtualBoxCommunicationFactory virtualBoxCommunicationFactory;
+    private VirtualBoxMachineProcessRepository virtualBoxMachineProcessRepository;
 
     private Logger logger = LoggerFactory.getLogger(VirtualBoxController.class);
 
@@ -126,6 +134,53 @@ public class VirtualBoxController implements EnvironmentController {
             exc.printStackTrace();
         } finally {
             logger.debug("End");
+        }
+    }
+
+    @Override
+    public List<String> getNodeNames() throws EnvironmentException {
+        var group = virtualBoxMachineGroupRepository.findById(groupId).orElseThrow(()-> new EnvironmentException("Group not found"));
+        var machines = virtualBoxMachineRepository.findByVirtualBoxMachineGroup(group);
+        return machines.stream().map(VirtualBoxMachine::getName).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getServiceProcessNames(String nodeName) throws EnvironmentException {
+        var machine = virtualBoxMachineRepository.findByName(nodeName);
+        if (machine == null)
+            throw new EnvironmentException(String.format("Machine %s not found", nodeName));
+        var serviceProcesses = virtualBoxMachineProcessRepository.findByVirtualBoxMachineAndProcessType(machine, "service");
+        return serviceProcesses.stream().map(VirtualBoxMachineProcess::getName).collect(Collectors.toList());
+    }
+
+    @Override
+    public void shutdownNode(String nodeName) throws EnvironmentException {
+        var machine = virtualBoxMachineRepository.findByName(nodeName);
+        if (machine == null)
+            throw new EnvironmentException(String.format("Machine %s not found", nodeName));
+        var communication = virtualBoxCommunicationFactory.build(machine);
+        if (communication.shutdown(machine) == 0) {
+            logger.debug(String.format("Machine %s shutdown succeed", machine.getName()));
+        } else {
+            logger.error(String.format("Could not shutdown machine %s", machine.getName()));
+            throw new EnvironmentException(String.format("Machine %s shutdown failed", machine.getName()));
+        }
+    }
+
+    @Override
+    public void stopServiceProcess(String nodeName, String serviceProcessName) throws EnvironmentException {
+        var machine = virtualBoxMachineRepository.findByName(nodeName);
+        if (machine == null)
+            throw new EnvironmentException(String.format("Machine %s not found", nodeName));
+        var communication = virtualBoxCommunicationFactory.build(machine);
+        var process = virtualBoxMachineProcessRepository.findByVirtualBoxMachineAndProcessName(machine, serviceProcessName);
+        if (process == null)
+            throw new EnvironmentException(String.format("Service %s not found", serviceProcessName));
+        if (communication.stopService(process) == 0) {
+            logger.debug(String.format("Stop service %s of node %s succeed", serviceProcessName, nodeName));
+        } else {
+            logger.error(String.format("Could not stop service %s of node %s", serviceProcessName, nodeName));
+            throw new EnvironmentException(String.format("Could not stop service %s of node %s", serviceProcessName, nodeName));
         }
     }
 }

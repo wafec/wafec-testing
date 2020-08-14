@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -19,6 +20,10 @@ public class TestExecution {
     @ManyToOne
     @JoinColumn(name = "test_case_id", referencedColumnName = "id")
     private TestCase testCase;
+    @Transient
+    private TestExecutionInput currentTestExecutionInput;
+    @Transient
+    private EnvironmentController environmentController;
 
     public static TestExecution of(TestCase testCase) {
         TestExecution testExecution = new TestExecution();

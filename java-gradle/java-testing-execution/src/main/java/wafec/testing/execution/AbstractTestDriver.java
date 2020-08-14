@@ -46,8 +46,10 @@ public abstract class AbstractTestDriver {
     public TestExecution runTest(TestExecution testExecution) throws
             TestDataValueNotFoundException, PreConditionViolationException, TestDriverException {
         try {
-            if (environmentController != null)
+            if (environmentController != null) {
+                testExecution.setEnvironmentController(environmentController);
                 environmentController.setUp();
+            }
             testDriverContext = new TestDriverContext(this);
             var testInputs = testInputRepository.findByTestCase(testExecution.getTestCase());
             for (var testInput : testInputs) {
@@ -64,12 +66,14 @@ public abstract class AbstractTestDriver {
                 testExecutionInput.setStatus(TestExecutionInput.STATUS_IN_USE);
                 testExecutionInput.setStartedAt(new Date());
                 testExecutionInputRepository.save(testExecutionInput);
+                testExecution.setCurrentTestExecutionInput(testExecutionInput);
                 var testDriverObservedOutputList = tryRunTestInput(testInput, testExecution);
                 saveObservedOutputs(testDriverObservedOutputList, testExecution, testInput);
                 testExecutionInput.setStatus(TestExecutionInput.STATUS_END);
                 testExecutionInput.setEndedAt(new Date());
                 testExecutionInputRepository.save(testExecutionInput);
             }
+            testExecution.setCurrentTestExecutionInput(null);
             if (schOutputCommandGroups != null)
                 runSch(testExecution);
             testExecution.setEndTime(new Date());
@@ -78,8 +82,10 @@ public abstract class AbstractTestDriver {
         } catch (EnvironmentException exc) {
             throw new TestDriverException(exc.getMessage(), exc);
         } finally {
-            if (environmentController != null)
+            if (environmentController != null) {
                 environmentController.tearDown();
+                testExecution.setEnvironmentController(null);
+            }
         }
     }
 

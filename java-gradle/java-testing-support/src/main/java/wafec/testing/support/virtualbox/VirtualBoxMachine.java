@@ -20,4 +20,6 @@ public class VirtualBoxMachine {
     @ManyToOne
     @JoinColumn(columnDefinition = "virtual_machine_group_id", referencedColumnName = "id")
     private VirtualBoxMachineGroup virtualBoxMachineGroup;
+    @Column(name = "operating_system")
+    private String operatingSystem;
 }
