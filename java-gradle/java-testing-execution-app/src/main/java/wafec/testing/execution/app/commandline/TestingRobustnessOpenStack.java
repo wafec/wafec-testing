@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationContext;
 import picocli.CommandLine.*;
 import wafec.testing.execution.*;
 import wafec.testing.execution.openstack.OpenStackTestDriverExecutionException;
+import wafec.testing.execution.openstack.robustness.OpenStackInjectionOperatorType;
 import wafec.testing.execution.openstack.robustness.OpenStackRobustnessTestRunner;
 import wafec.testing.execution.robustness.*;
 import wafec.testing.execution.utils.SchOutputCommandGroup;
@@ -41,6 +42,8 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
     private Long[] schGroupIds;
     @Option(names = { "-c", "--sch-command-set" }, paramLabel = "SCH-COMMAND-SET" )
     private Long schCommandSetId;
+    @Option(names = { "-o", "--operator-type" }, paramLabel = "OPERATOR-TYPE")
+    private OpenStackInjectionOperatorType operatorType = OpenStackInjectionOperatorType.LARANJEIRO;
 
     @Autowired
     private OpenStackRobustnessTestRunner openStackRobustnessTestRunner;
@@ -91,6 +94,7 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
             openStackRobustnessTestRunner.getTestDriver().setSchOutputCommandGroups(schOutputCommandGroups);
         }
         openStackRobustnessTestRunner.setEnvironmentController(environmentController);
+        openStackRobustnessTestRunner.setInjectionOperatorType(operatorType);
         if (scan)
             repeat = 1;
         for (int i = 0; i < repeat; i++) {

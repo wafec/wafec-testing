@@ -15,6 +15,6 @@ public class SchOutputCommandGroup {
     private String host;
     private String username;
     private String passwd;
-    @ManyToMany(mappedBy = "schOutputCommandGroups")
+    @ManyToMany(mappedBy = "schOutputCommandGroups", fetch = FetchType.EAGER)
     private List<SchOutputCommandSet> schOutputCommandSets;
 }

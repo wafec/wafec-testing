@@ -82,49 +82,55 @@ public class JsonInjectionManager implements InjectionManager {
 
     @Override
     public void handleInjectionManaged(Object data, InjectionTarget injectionTarget) {
-        if (injectionTarget == null)
-            throw new IllegalArgumentException("injectionTarget must be instantiated");
-        if (injectionTarget.isDiscard())
-            return;
+        try {
+            objectLock.lock();
 
-        injectionTarget.setDataType(getMutationDataType(data));
-        List operators = null;
-        List<InjectionTargetManaged> managedList = injectionTargetManagedRepository.findByInjectionTarget(injectionTarget);
-        switch (injectionTarget.getDataType()) {
-            case BOOLEAN:
-                operators = BooleanOperatorUtils.getOperators();
-                break;
-            case LIST:
-                operators = ListOperatorUtils.getOperators();
-                break;
-            case INTEGER:
-                operators = IntegerOperatorUtils.getOperators();
-                break;
-            case DOUBLE:
-                operators = DoubleOperatorUtils.getOperators();
-                break;
-            case STRING:
-                operators = StringOperatorUtils.getOperators();
-                break;
-            case MAP:
-                operators = MapOperatorUtils.getOperators();
-                break;
-        }
+            if (injectionTarget == null)
+                throw new IllegalArgumentException("injectionTarget must be instantiated");
+            if (injectionTarget.isDiscard())
+                return;
 
-        if (operators != null) {
-            for (var operator : operators) {
-                GenericTypeOperator genericOperator = (GenericTypeOperator) operator;
-                var managedOpt = managedList.stream().filter(m -> m.getInjectorName().equals(genericOperator.getInjectionKey()))
-                        .findFirst();
-                if (managedOpt.isEmpty()) {
-                    InjectionTargetManaged managed = new InjectionTargetManaged();
-                    managed.setInjectionCount(0);
-                    managed.setInjectionTarget(injectionTarget);
-                    managed.setInjectorName(genericOperator.getInjectionKey());
-                    managedList.add(managed);
-                    injectionTargetManagedRepository.save(managed);
+            injectionTarget.setDataType(getMutationDataType(data));
+            List operators = null;
+            List<InjectionTargetManaged> managedList = injectionTargetManagedRepository.findByInjectionTarget(injectionTarget);
+            switch (injectionTarget.getDataType()) {
+                case BOOLEAN:
+                    operators = BooleanOperatorUtils.getOperators();
+                    break;
+                case LIST:
+                    operators = ListOperatorUtils.getOperators();
+                    break;
+                case INTEGER:
+                    operators = IntegerOperatorUtils.getOperators();
+                    break;
+                case DOUBLE:
+                    operators = DoubleOperatorUtils.getOperators();
+                    break;
+                case STRING:
+                    operators = StringOperatorUtils.getOperators();
+                    break;
+                case MAP:
+                    operators = MapOperatorUtils.getOperators();
+                    break;
+            }
+
+            if (operators != null) {
+                for (var operator : operators) {
+                    GenericTypeOperator genericOperator = (GenericTypeOperator) operator;
+                    var managedOpt = managedList.stream().filter(m -> m.getInjectorName().equals(genericOperator.getInjectionKey()))
+                            .findFirst();
+                    if (managedOpt.isEmpty()) {
+                        InjectionTargetManaged managed = new InjectionTargetManaged();
+                        managed.setInjectionCount(0);
+                        managed.setInjectionTarget(injectionTarget);
+                        managed.setInjectorName(genericOperator.getInjectionKey());
+                        managedList.add(managed);
+                        injectionTargetManagedRepository.save(managed);
+                    }
                 }
             }
+        } finally {
+            objectLock.unlock();
         }
     }
 
@@ -254,7 +260,7 @@ public class JsonInjectionManager implements InjectionManager {
         }
         var operatorOpt = injectionTargetOperatorList.stream().filter(o -> !o.isUsed()).findFirst();
         if (operatorOpt.isEmpty())
-            throw new UnexpectedInjectorException(String.format("NotUsed operator not found in list [%s]",
+            throw new UnexpectedInjectorException(String.format("Non-used operator not found in list [%s]",
                     injectionTargetOperatorList.stream().map(InjectionTargetOperator::getInjectionKey).collect(Collectors.joining(", "))));
         var operator = operatorOpt.get();
         operator.setFieldValue(JsonSerializationUtils.trySerialize(data, "Could not serialize"));

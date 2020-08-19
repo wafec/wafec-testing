@@ -45,6 +45,15 @@ public class OpenStackRobustnessTestRunner extends AbstractRobustnessTestRunner 
         super(openStackTestDriver, rabbitMqDataInterception, openStackDataParser);
     }
 
+    public void setInjectionOperatorType(OpenStackInjectionOperatorType operatorType) {
+        if (operatorType.equals(OpenStackInjectionOperatorType.LARANJEIRO))
+            dataTamper.setInjectionManager(null);
+        else if (operatorType.equals(OpenStackInjectionOperatorType.KANSO))
+            dataTamper.setInjectionManager(
+                    applicationContext.getBean(KansoInjectionManager.class, environmentController)
+            );
+    }
+
     @Override
     protected ApplicationData adulterate(ApplicationData appData, RobustnessTestExecution robustnessTestExecution)
             throws CouldNotApplyOperatorException {

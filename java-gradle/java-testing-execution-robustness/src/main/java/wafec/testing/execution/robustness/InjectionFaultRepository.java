@@ -16,4 +16,6 @@ public interface InjectionFaultRepository extends CrudRepository<InjectionFault,
     long countByRobustnessTestExecutionAndUsedAndNotDiscard(RobustnessTestExecution robustnessTestExecution);
     @Query("SELECT DISTINCT concat(it.sourceKey, ' ', it.context) FROM InjectionFault if, InjectionTarget it WHERE if.robustnessTestExecution = ?1 AND if.injectionTarget = it AND it.discard is false")
     List<String> findByRobustnessTestExecutionAndNotDiscardDistinctSourceKeyAndContext(RobustnessTestExecution robustnessTestExecution);
+    @Query("SELECT if FROM InjectionFault if WHERE if.robustnessTestExecution = ?1 AND if.injectionTarget.sourceKey = ?2")
+    List<InjectionFault> findByRobustnessTestExecutionAndSourceKey(RobustnessTestExecution robustnessTestExecution, String sourceKey);
 }

@@ -1,0 +1,36 @@
+---
+id: 1
+name: "vm4openstack"
+machines:
+- id: 1
+  name: "openstack_controller_2"
+  snapshot: "test_ssh"
+  processes:
+  - id: 2
+    name: "nova-scheduler"
+    type: "service"
+  systems:
+  - id: 2
+    username: "test"
+    password: "test-321"
+    address: "controller"
+  operating_system: "linux"
+- id: 2
+  name: "openstack_compute1_2"
+  snapshot: "test_ssh"
+  processes: null
+  systems: null
+  operating_system: "linux"
+- id: 3
+  name: "openstack_compute2_2"
+  snapshot: "test_ssh"
+  processes: null
+  systems: null
+  operating_system: "linux"
+- id: 4
+  name: "openstack_block1_2"
+  snapshot: "test_ssh"
+  processes: null
+  systems: null
+  operating_system: "linux"
+program_cmd: "VBoxManage"

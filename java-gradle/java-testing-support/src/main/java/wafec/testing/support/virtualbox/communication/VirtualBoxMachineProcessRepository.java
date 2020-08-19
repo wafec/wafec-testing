@@ -12,7 +12,7 @@ public interface VirtualBoxMachineProcessRepository extends CrudRepository<Virtu
     @Query("SELECT process FROM VirtualBoxMachineProcess process WHERE process.virtualBoxMachine = ?1 AND process.processType = ?2")
     List<VirtualBoxMachineProcess> findByVirtualBoxMachineAndProcessType(VirtualBoxMachine virtualBoxMachine,
                                                                          String processType);
-    @Query("SELECT process FROM VirtualBoxMachineProcess process WHERE process.virtualBoxMachine = ?1 AND process.processName = ?2")
+    @Query("SELECT process FROM VirtualBoxMachineProcess process WHERE process.virtualBoxMachine = ?1 AND process.name = ?2")
     VirtualBoxMachineProcess findByVirtualBoxMachineAndProcessName(VirtualBoxMachine virtualBoxMachine,
                                                                    String processName);
 }

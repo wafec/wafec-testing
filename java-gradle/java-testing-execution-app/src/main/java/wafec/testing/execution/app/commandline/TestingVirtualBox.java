@@ -4,7 +4,8 @@ import picocli.CommandLine;
 
 @CommandLine.Command(name = "virtualbox", subcommands = {
         TestingVirtualBoxMachine.class,
-        TestingVirtualBoxGroup.class
+        TestingVirtualBoxGroup.class,
+        TestingVirtualBoxConfiguration.class
 })
 public class TestingVirtualBox {
 }
