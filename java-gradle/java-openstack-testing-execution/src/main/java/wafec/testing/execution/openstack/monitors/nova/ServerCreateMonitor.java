@@ -1,5 +1,6 @@
 package wafec.testing.execution.openstack.monitors.nova;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import wafec.testing.driver.openstack.client.Server;
 
@@ -11,7 +12,7 @@ public class ServerCreateMonitor extends AbstractServerMonitor {
 
     public ServerCreateMonitor() {
         super();
-        timeout = TimeUnit.MILLISECONDS.convert(10, TimeUnit.MINUTES);
+        timeout = TimeUnit.MILLISECONDS.convert(15, TimeUnit.MINUTES);
     }
 
     @Override

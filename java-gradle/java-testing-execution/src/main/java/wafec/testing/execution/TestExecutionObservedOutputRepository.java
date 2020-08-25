@@ -12,4 +12,6 @@ public interface TestExecutionObservedOutputRepository extends CrudRepository<Te
     List<TestExecutionObservedOutput> findByTestCase(TestCase testCase);
     @Query("SELECT max(to.position) FROM TestExecutionObservedOutput teo, TestOutput to WHERE teo.testOutput = to AND teo.testExecution = ?1 AND teo.testInput = ?2")
     int maxPositionByTestExecutionAndTestInput(TestExecution testExecution, TestInput testInput);
+    @Query("SELECT o FROM TestExecutionObservedOutput o LEFT JOIN FETCH o.testOutput to WHERE o.testExecution = ?1 ORDER BY to.createdAt")
+    List<TestExecutionObservedOutput> findByTestExecution(TestExecution testExecution);
 }

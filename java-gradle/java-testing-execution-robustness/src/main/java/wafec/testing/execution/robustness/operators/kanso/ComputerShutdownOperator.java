@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import wafec.testing.execution.EnvironmentController;
 import wafec.testing.execution.EnvironmentException;
+import wafec.testing.execution.robustness.CouldNotApplyOperatorException;
 import wafec.testing.execution.robustness.GenericTypeOperator;
 import wafec.testing.execution.robustness.InjectionFault;
 
@@ -24,7 +25,11 @@ public class ComputerShutdownOperator implements GenericTypeOperator, KansoOpera
     }
 
     @Override
-    public void injectFault(InjectionFault injectionFault) throws EnvironmentException {
-        environmentController.shutdownNode(targetHostName);
+    public void injectFault(InjectionFault injectionFault) throws CouldNotApplyOperatorException {
+        try {
+            environmentController.shutdownNode(targetHostName);
+        } catch (EnvironmentException exc) {
+            throw new CouldNotApplyOperatorException(exc.getMessage(), exc);
+        }
     }
 }

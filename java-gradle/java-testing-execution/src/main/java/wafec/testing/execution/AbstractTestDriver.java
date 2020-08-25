@@ -9,6 +9,7 @@ import wafec.testing.execution.utils.SchOutputExtractor;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class AbstractTestDriver {
     public static final String SOURCE = AbstractTestDriver.class.getName();
@@ -32,7 +33,7 @@ public abstract class AbstractTestDriver {
     @Setter
     protected EnvironmentController environmentController;
     @Setter
-    protected List<SchOutputCommandGroup> schOutputCommandGroups;
+    protected List<SchOutputCommandGroup> schOutputCommandGroupList;
 
     private Logger logger = LoggerFactory.getLogger(AbstractTestDriver.class);
 
@@ -73,15 +74,12 @@ public abstract class AbstractTestDriver {
                 testExecutionInput.setEndedAt(new Date());
                 testExecutionInputRepository.save(testExecutionInput);
             }
-            testExecution.setCurrentTestExecutionInput(null);
-            if (schOutputCommandGroups != null)
-                runSch(testExecution);
-            testExecution.setEndTime(new Date());
-            testExecutionRepository.save(testExecution);
+            handleExecutionEnd(testExecution);
             return testExecution;
         } catch (EnvironmentException exc) {
             throw new TestDriverException(exc.getMessage(), exc);
         } finally {
+            schOutputExtractor.executeAndParse(schOutputCommandGroupList, testExecution);
             if (environmentController != null) {
                 environmentController.tearDown();
                 testExecution.setEnvironmentController(null);
@@ -89,53 +87,23 @@ public abstract class AbstractTestDriver {
         }
     }
 
+    protected void handleExecutionEnd(TestExecution testExecution) {
+        testExecution.setCurrentTestExecutionInput(null);
+        testExecution.setEndTime(new Date());
+        testExecutionRepository.save(testExecution);
+    }
+
     private void saveObservedOutputs(List<TestDriverObservedOutput> observedOutputs, TestExecution testExecution,
                                      TestInput testInput) {
         int i = 0;
         for (var testDriverObservedOutput : observedOutputs) {
             var testOutput = testOutputMapper.fromTestDriverObservedOutput(testDriverObservedOutput);
-            testOutput.setCreatedAt(new Date());
+            testOutput.setCreatedAt(Optional.ofNullable(testDriverObservedOutput.getCreatedAt()).orElseGet(Date::new));
             testOutput.setPosition(i++);
             TestExecutionObservedOutput observedOutput =
                     TestExecutionObservedOutput.of(testExecution, testInput, testOutput);
             testOutputRepository.save(testOutput);
             testExecutionObservedOutputRepository.save(observedOutput);
-        }
-    }
-
-    protected void runSch(TestExecution testExecution) {
-        var testExecutionInputList = testExecutionInputRepository.findByTestExecution(testExecution);
-        for (var schOutputCommandGroup : schOutputCommandGroups) {
-            var result = schOutputExtractor.execute(schOutputCommandGroup);
-            for (int i = 0; i < result.size(); i++) {
-                var schOutput = result.get(i);
-
-                TestOutput testOutput = new TestOutput();
-                testOutput.setCreatedAt(schOutput.getCreatedAt());
-                testOutput.setOutput(schOutput.getLine());
-                testOutput.setSource(schOutput.getSource());
-                testOutput.setSourceType("sch");
-                testOutput.setPosition(0);
-
-                var testExecutionInput = testExecutionInputList
-                        .stream().filter(input -> testOutput.getCreatedAt().after(input.getStartedAt())
-                                                    && testOutput.getCreatedAt().before(input.getEndedAt()))
-                        .findFirst().orElse(null);
-
-                TestInput testInput = null;
-                if (testExecutionInput != null) {
-                    testInput = testExecutionInput.getTestInput();
-                    int maxPosition = testExecutionObservedOutputRepository.maxPositionByTestExecutionAndTestInput(testExecution, testInput);
-                    testOutput.setPosition(maxPosition + 1);
-                } else if (schOutput.isIgnoreIfInvalid()) {
-                    continue;
-                }
-
-                testOutputRepository.save(testOutput);
-                TestExecutionObservedOutput testExecutionObservedOutput =
-                        TestExecutionObservedOutput.of(testExecution, testInput, testOutput);
-                testExecutionObservedOutputRepository.save(testExecutionObservedOutput);
-            }
         }
     }
 

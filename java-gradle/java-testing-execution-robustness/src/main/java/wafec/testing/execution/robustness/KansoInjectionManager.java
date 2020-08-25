@@ -85,12 +85,16 @@ public class KansoInjectionManager implements InjectionManager {
             }
 
             var operator = selectOperatorFromList(injectionTarget, injectionFault);
-
-            if (operator != null) {
-                operator.injectFault(injectionFault);
-                incrementInjectionManagedCount(injectionFault, operator);
-            } else {
-                injectionFault.setUsed(false);
+            try {
+                if (operator != null) {
+                    operator.injectFault(injectionFault);
+                    incrementInjectionManagedCount(injectionFault, operator);
+                } else {
+                    injectionFault.setUsed(false);
+                    injectionFault.setPersist(true);
+                }
+            } catch (CouldNotApplyOperatorException exc) {
+                injectionFault.setUsed(true);
                 injectionFault.setPersist(true);
             }
         } catch (EnvironmentException exc) {
@@ -123,8 +127,7 @@ public class KansoInjectionManager implements InjectionManager {
         for (var hostName : _environmentController.getNodeNames()) {
             kansoOperators.add(applicationContext.getBean(ComputerShutdownOperator.class, _environmentController, hostName));
             for (var serviceName : _environmentController.getServiceProcessNames(hostName)) {
-                String composedServiceName = String.format("%s.%s", hostName, serviceName);
-                kansoOperators.add(applicationContext.getBean(ServiceShutdownOperator.class, _environmentController, hostName, composedServiceName));
+                kansoOperators.add(applicationContext.getBean(ServiceShutdownOperator.class, _environmentController, hostName, serviceName));
             }
         }
 

@@ -1,5 +1,6 @@
 package wafec.testing.execution.app.commandline;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -51,6 +52,7 @@ public class TestingVirtualBoxConfiguration implements Callable<Integer> {
 
     void saveGroupConfiguration(GroupConfiguration groupConfiguration) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.writerWithDefaultPrettyPrinter().writeValue(configurationFile, groupConfiguration);
     }
 
@@ -69,6 +71,7 @@ public class TestingVirtualBoxConfiguration implements Callable<Integer> {
                     machine.setInUse(machine.isInUse());
                     machine.setSnapshot(machineConfiguration.getSnapshot());
                     machine.setName(machineConfiguration.getName());
+                    machine.setShutdownPrevent(machineConfiguration.isShutdownPrevent());
                     machine.setVirtualBoxMachineGroup(group);
                     machine.setOperatingSystem(machineConfiguration.getOperatingSystem());
                     virtualBoxMachineRepository.save(machine);
@@ -76,6 +79,10 @@ public class TestingVirtualBoxConfiguration implements Callable<Integer> {
                     machineConfiguration.setId(machine.getId());
                     if (machineConfiguration.getProcesses() != null)
                         for (var processConfiguration : machineConfiguration.getProcesses()) {
+                            if (virtualBoxMachineProcessRepository.findByVirtualBoxMachineAndProcessName(machine, processConfiguration.getName()) != null) {
+                                System.out.println(String.format("WARN!! Please do not enter duplicate process name: %s", processConfiguration.getName()));
+                                continue;
+                            }
                             var process = virtualBoxMachineProcessRepository.findById(Optional.ofNullable(processConfiguration.getId()).orElse(0L)).orElseGet(VirtualBoxMachineProcess::new);
                             process.setName(processConfiguration.getName());
                             process.setVirtualBoxMachine(machine);
@@ -98,6 +105,11 @@ public class TestingVirtualBoxConfiguration implements Callable<Integer> {
     }
 
     void configureLinux(VirtualBoxMachine machine, MachineSystemConfiguration systemConfiguration) {
+        if (virtualBoxMachineLinuxRepository.findByVirtualBoxMachineAndAddress(machine, systemConfiguration.getAddress()) != null) {
+            System.out.println(String.format("WARN!! Please do not enter duplicate system address: %s", systemConfiguration.getAddress()));
+            return;
+        }
+
         var system = virtualBoxMachineLinuxRepository.findById(Optional.ofNullable(systemConfiguration.getId()).orElse(0L)).orElseGet(VirtualBoxMachineLinux::new);
         system.setUsername(systemConfiguration.getUsername());
         system.setAddress(systemConfiguration.getAddress());

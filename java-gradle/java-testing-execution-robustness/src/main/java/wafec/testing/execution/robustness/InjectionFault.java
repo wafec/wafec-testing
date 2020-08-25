@@ -3,6 +3,7 @@ package wafec.testing.execution.robustness;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name = "INJECTION_FAULT")
@@ -21,6 +22,8 @@ public class InjectionFault {
     @JoinColumn(columnDefinition = "injection_target_operator_id", referencedColumnName = "id")
     private InjectionTargetOperator injectionTargetOperator;
     private boolean used;
+    @Column(name = "used_at")
+    private Date usedAt;
     @Transient
     private boolean persist;
 }

@@ -2,6 +2,7 @@ package wafec.testing.execution;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class TestDriverObservedOutputBuilder {
@@ -26,6 +27,7 @@ public class TestDriverObservedOutputBuilder {
     public List<TestDriverObservedOutput> buildList() {
         if (instance != null)
             list.add(instance);
+        list.sort(Comparator.comparing(TestDriverObservedOutput::getCreatedAt));
         return new ArrayList<>(list);
     }
 

@@ -11,4 +11,6 @@ import java.util.List;
 public interface VirtualBoxMachineLinuxRepository extends CrudRepository<VirtualBoxMachineLinux, Long> {
     @Query("SELECT linux FROM VirtualBoxMachineLinux linux WHERE linux.virtualBoxMachine = ?1 ORDER BY linux.id DESC")
     List<VirtualBoxMachineLinux> findByVirtualBoxMachine(VirtualBoxMachine virtualBoxMachine);
+    @Query("SELECT linux FROM VirtualBoxMachineLinux linux WHERE linux.virtualBoxMachine = ?1 and linux.address = ?2")
+    VirtualBoxMachineLinux findByVirtualBoxMachineAndAddress(VirtualBoxMachine virtualBoxMachine, String address);
 }

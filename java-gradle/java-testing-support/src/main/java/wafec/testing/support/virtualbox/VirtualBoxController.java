@@ -41,6 +41,7 @@ public class VirtualBoxController implements EnvironmentController {
     private ApplicationContext context;
     @Autowired
     private VirtualBoxCommunicationFactory virtualBoxCommunicationFactory;
+    @Autowired
     private VirtualBoxMachineProcessRepository virtualBoxMachineProcessRepository;
 
     private Logger logger = LoggerFactory.getLogger(VirtualBoxController.class);
@@ -146,7 +147,8 @@ public class VirtualBoxController implements EnvironmentController {
 
     @Override
     public List<String> getServiceProcessNames(String nodeName) throws EnvironmentException {
-        var machine = virtualBoxMachineRepository.findByName(nodeName);
+        var virtualBoxMachineGroup = virtualBoxMachineGroupRepository.findById(groupId).orElseThrow();
+        var machine = virtualBoxMachineRepository.findByVirtualBoxMachineGroupAndName(virtualBoxMachineGroup, nodeName);
         if (machine == null)
             throw new EnvironmentException(String.format("Machine %s not found", nodeName));
         var serviceProcesses = virtualBoxMachineProcessRepository.findByVirtualBoxMachineAndProcessType(machine, "service");
@@ -155,9 +157,12 @@ public class VirtualBoxController implements EnvironmentController {
 
     @Override
     public void shutdownNode(String nodeName) throws EnvironmentException {
-        var machine = virtualBoxMachineRepository.findByName(nodeName);
+        var virtualBoxMachineGroup = virtualBoxMachineGroupRepository.findById(groupId).orElseThrow();
+        var machine = virtualBoxMachineRepository.findByVirtualBoxMachineGroupAndName(virtualBoxMachineGroup, nodeName);
         if (machine == null)
             throw new EnvironmentException(String.format("Machine %s not found", nodeName));
+        if (machine.isShutdownPrevent())
+            throw new EnvironmentException(String.format("Machine %s is shutdown prevent", nodeName));
         var communication = virtualBoxCommunicationFactory.build(machine);
         if (communication.shutdown(machine) == 0) {
             logger.debug(String.format("Machine %s shutdown succeed", machine.getName()));
@@ -169,7 +174,8 @@ public class VirtualBoxController implements EnvironmentController {
 
     @Override
     public void stopServiceProcess(String nodeName, String serviceProcessName) throws EnvironmentException {
-        var machine = virtualBoxMachineRepository.findByName(nodeName);
+        var virtualBoxMachineGroup = virtualBoxMachineGroupRepository.findById(groupId).orElseThrow();
+        var machine = virtualBoxMachineRepository.findByVirtualBoxMachineGroupAndName(virtualBoxMachineGroup, nodeName);
         if (machine == null)
             throw new EnvironmentException(String.format("Machine %s not found", nodeName));
         var communication = virtualBoxCommunicationFactory.build(machine);

@@ -22,4 +22,6 @@ public class VirtualBoxMachine {
     private VirtualBoxMachineGroup virtualBoxMachineGroup;
     @Column(name = "operating_system")
     private String operatingSystem;
+    @Column(name = "shutdown_prevent")
+    private boolean shutdownPrevent;
 }

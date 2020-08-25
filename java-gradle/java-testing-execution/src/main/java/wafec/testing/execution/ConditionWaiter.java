@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 @NoArgsConstructor
 public class ConditionWaiter {
     public static final long DEFAULT_TIMEOUT = TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES);
-    public static final long DEFAULT_INTERVAL = 100;
+    public static final long DEFAULT_INTERVAL = 300;
 
     private long timeout = DEFAULT_TIMEOUT;
     private long interval = DEFAULT_INTERVAL;

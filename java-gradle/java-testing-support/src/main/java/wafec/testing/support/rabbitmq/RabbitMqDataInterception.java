@@ -1,5 +1,6 @@
 package wafec.testing.support.rabbitmq;
 
+import com.rabbitmq.client.AlreadyClosedException;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -161,6 +162,8 @@ public class RabbitMqDataInterception implements DataInterception {
                 rebindEnd(channel, customBinding);
             } catch(IOException | TimeoutException exc) {
                 logger.warn(exc.getMessage(), exc);
+            } catch (RuntimeException exc) {
+                logger.error(exc.getMessage(), exc);
             }
         }
     }

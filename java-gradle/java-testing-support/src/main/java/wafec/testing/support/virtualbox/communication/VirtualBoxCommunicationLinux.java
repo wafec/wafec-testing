@@ -28,7 +28,7 @@ public class VirtualBoxCommunicationLinux extends VirtualBoxCommunicationBase {
             try {
                 Session session = jsch.getSession(linux.getUsername(), linux.getAddress());
                 session.setPassword(linux.getPasswd());
-                session.setConfig("StringHostKeyChecking", "no");
+                session.setConfig("StrictHostKeyChecking", "no");
                 session.connect();
                 ChannelExec channel = (ChannelExec) session.openChannel("exec");
                 channel.setCommand(String.format("sudo systemctl stop %s", process.getName()));

@@ -115,7 +115,6 @@ public class OpenStackRobustnessTestRunner extends AbstractRobustnessTestRunner 
         var testExecution = robustnessTestExecution.getTestExecution();
         var currentTestExecutionInput = testExecution.getCurrentTestExecutionInput();
         if (currentTestExecutionInput == null) {
-            logger.debug("Skipping. TestExecutionInput is null.");
             return;
         }
         if (currentTestExecutionInput.getStatus().equals(TestExecutionInput.STATUS_IN_USE)) {

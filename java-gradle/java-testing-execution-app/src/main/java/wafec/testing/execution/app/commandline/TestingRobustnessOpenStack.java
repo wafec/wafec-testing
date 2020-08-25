@@ -7,7 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import picocli.CommandLine.*;
 import wafec.testing.execution.*;
-import wafec.testing.execution.openstack.OpenStackTestDriverExecutionException;
+import wafec.testing.execution.app.services.InjectionFilterService;
+import wafec.testing.execution.app.services.InjectionFilters;
 import wafec.testing.execution.openstack.robustness.OpenStackInjectionOperatorType;
 import wafec.testing.execution.openstack.robustness.OpenStackRobustnessTestRunner;
 import wafec.testing.execution.robustness.*;
@@ -21,7 +22,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-@Command(name = "openstack")
+@Command(name = "openstack", subcommands = {
+        TestingRobustnessOpenStackAnalyze.class
+})
 public class TestingRobustnessOpenStack implements Callable<Integer> {
     @ArgGroup(exclusive = true)
     MutualOption group;
@@ -44,6 +47,8 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
     private Long schCommandSetId;
     @Option(names = { "-o", "--operator-type" }, paramLabel = "OPERATOR-TYPE")
     private OpenStackInjectionOperatorType operatorType = OpenStackInjectionOperatorType.LARANJEIRO;
+    @Option(names = { "-f", "--filter" }, paramLabel = "FILTERS")
+    private InjectionFilters[] filters;
 
     @Autowired
     private OpenStackRobustnessTestRunner openStackRobustnessTestRunner;
@@ -60,6 +65,9 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
 
     @Autowired
     private ApplicationContext context;
+
+    @Autowired
+    private InjectionFilterService injectionFilterService;
 
     private Logger logger = LoggerFactory.getLogger(TestingRobustnessOpenStack.class);
 
@@ -91,14 +99,15 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
             schOutputCommandGroups.addAll(schCommandSet.getSchOutputCommandGroups());
         }
         if (schOutputCommandGroups.size() > 0) {
-            openStackRobustnessTestRunner.getTestDriver().setSchOutputCommandGroups(schOutputCommandGroups);
+            openStackRobustnessTestRunner.setSchOutputCommandGroupList(schOutputCommandGroups);
         }
         openStackRobustnessTestRunner.setEnvironmentController(environmentController);
         openStackRobustnessTestRunner.setInjectionOperatorType(operatorType);
         if (scan)
             repeat = 1;
         for (int i = 0; i < repeat; i++) {
-            logger.info(String.format("BEGIN X: %d", i + 1));
+            logger.info(String.format("BEGIN X: %d/%d", i + 1, repeat));
+            injectionFilterService.applyFilters(robustnessTest, filters);
             try {
                 var executionInfo = openStackRobustnessTestRunner.manage(robustnessTest, scan);
                 logger.info(String.format("ID: %d, Execution: %d", executionInfo.getId(), executionInfo.getTestExecution().getId()));
@@ -106,7 +115,7 @@ public class TestingRobustnessOpenStack implements Callable<Integer> {
                      PreConditionViolationException exc) {
                 logger.error(exc.getMessage(), exc);
             }
-            logger.info(String.format("END   X: %d", i + 1));
+            logger.info(String.format("END   X: %d/%d", i + 1, repeat));
         }
         return 0;
     }

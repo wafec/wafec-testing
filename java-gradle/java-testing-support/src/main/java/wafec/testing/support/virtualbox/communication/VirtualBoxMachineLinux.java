@@ -5,7 +5,11 @@ import wafec.testing.support.virtualbox.VirtualBoxMachine;
 
 import javax.persistence.*;
 
-@Table(name = "VIRTUAL_BOX_MACHINE_LINUX")
+@Table(name = "VIRTUAL_BOX_MACHINE_LINUX",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "virtual_box_machine_id", "address" })
+    }
+)
 @Entity
 @Data
 public class VirtualBoxMachineLinux {

@@ -6,7 +6,7 @@ machines:
   name: "openstack_controller_2"
   snapshot: "test_ssh"
   processes:
-  - id: 2
+  - id: 1
     name: "nova-scheduler"
     type: "service"
   systems:
@@ -15,22 +15,20 @@ machines:
     password: "test-321"
     address: "controller"
   operating_system: "linux"
+  shutdown_prevent: true
 - id: 2
   name: "openstack_compute1_2"
   snapshot: "test_ssh"
-  processes: null
-  systems: null
   operating_system: "linux"
+  shutdown_prevent: false
 - id: 3
   name: "openstack_compute2_2"
   snapshot: "test_ssh"
-  processes: null
-  systems: null
   operating_system: "linux"
+  shutdown_prevent: false
 - id: 4
   name: "openstack_block1_2"
   snapshot: "test_ssh"
-  processes: null
-  systems: null
   operating_system: "linux"
+  shutdown_prevent: false
 program_cmd: "VBoxManage"

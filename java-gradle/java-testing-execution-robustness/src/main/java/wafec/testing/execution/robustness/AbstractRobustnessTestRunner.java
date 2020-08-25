@@ -7,9 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import wafec.testing.execution.*;
+import wafec.testing.execution.utils.SchOutputCommandGroup;
+import wafec.testing.execution.utils.SchOutputExtractor;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 public abstract class AbstractRobustnessTestRunner {
     @Getter
@@ -27,6 +30,10 @@ public abstract class AbstractRobustnessTestRunner {
     protected RobustnessTestExecution currentRobustnessTestExecution;
     @Setter
     protected EnvironmentController environmentController;
+    @Setter
+    protected List<SchOutputCommandGroup> schOutputCommandGroupList;
+    @Autowired
+    protected SchOutputExtractor schOutputExtractor;
 
     Logger logger = LoggerFactory.getLogger(AbstractRobustnessTestRunner.class);
 
@@ -61,7 +68,7 @@ public abstract class AbstractRobustnessTestRunner {
             PreConditionViolationException,
             RobustnessException {
         var robustnessTest = robustnessTestExecution.getRobustnessTest();
-        logger.info(String.format("Start #%d", robustnessTest.getId()));
+        logger.info(String.format("Start #%d, Execution #%d", robustnessTest.getId(), robustnessTestExecution.getId()));
         var stopWatch = new StopWatch();
         stopWatch.start();
         currentRobustnessTestExecution = robustnessTestExecution;
@@ -77,10 +84,12 @@ public abstract class AbstractRobustnessTestRunner {
             throw new RobustnessException(exc.getMessage(), exc);
         } finally {
             dataInterception.turnOff();
-            if (environmentController != null)
+            schOutputExtractor.executeAndParse(schOutputCommandGroupList, robustnessTestExecution.getTestExecution());
+            if (environmentController != null) {
                 environmentController.tearDown();
+            }
             stopWatch.stop();
-            logger.info(String.format("End #%d %s", robustnessTest.getId(), stopWatch.toString()));
+            logger.info(String.format("End #%d %s, Execution #%d", robustnessTest.getId(), stopWatch.toString(), robustnessTestExecution.getId()));
         }
     }
 

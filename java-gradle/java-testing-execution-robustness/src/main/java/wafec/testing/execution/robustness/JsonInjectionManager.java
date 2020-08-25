@@ -264,16 +264,8 @@ public class JsonInjectionManager implements InjectionManager {
                     injectionTargetOperatorList.stream().map(InjectionTargetOperator::getInjectionKey).collect(Collectors.joining(", "))));
         var operator = operatorOpt.get();
         operator.setFieldValue(JsonSerializationUtils.trySerialize(data, "Could not serialize"));
-        int capacity = Math.max(1, (int)(injectionTargetOperatorList.size() * usagePercentage));
         operator.setUsed(true);
         injectionTargetOperatorRepository.save(operator);
-        long amountOfNotUsed = injectionTargetOperatorList.stream().filter(o -> o.isUsed()).count();
-        if (amountOfNotUsed < capacity) {
-            injectionFault.setUsed(false);
-            injectionFaultRepository.save(injectionFault);
-            robustnessTestExecution.setStopFaultPropagation(true);
-            robustnessTestExecutionRepository.save(robustnessTestExecution);
-        }
         currentInjectionTargetOperator = operator;
         logger.info(String.format("Will inject '%s' on <Data(value=%s, type=%s, source=%s, context=%s)>", operator.getInjectionKey(),
                 data, data.getClass().getName(), injectionTarget.getSourceKey(), injectionTarget.getContext()));

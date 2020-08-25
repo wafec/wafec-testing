@@ -14,6 +14,8 @@ public class MachineConfiguration {
     private String snapshot;
     @JsonProperty("operating_system")
     private String operatingSystem;
+    @JsonProperty("shutdown_prevent")
+    private boolean shutdownPrevent;
     private List<MachineProcessConfiguration> processes;
     private List<MachineSystemConfiguration> systems;
 }

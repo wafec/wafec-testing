@@ -8,6 +8,7 @@ import wafec.testing.execution.TestExecutionInputRepository;
 import wafec.testing.execution.TestInput;
 import wafec.testing.execution.TestInputRepository;
 
+import java.util.Date;
 import java.util.Random;
 
 @Component
@@ -98,6 +99,7 @@ public abstract class AbstractDefaultTamper implements DataTamper {
                     var available = listOfAll.size() - listOfAllOfExecution.size();
                     if (available <= (amountOfFaultPerTest - n)) {
                         injectionFault.setUsed(true);
+                        injectionFault.setUsedAt(new Date());
                         data = willAdulterate(data, sourceKey, context, robustnessTestExecution, injectionFault);
                     } else {
                         double randValue;
@@ -105,6 +107,7 @@ public abstract class AbstractDefaultTamper implements DataTamper {
                             logger.info(String.format("<Data(source=%s, context=%s)> picked up with rand of '%s'",
                                     sourceKey, context, randValue));
                             injectionFault.setUsed(true);
+                            injectionFault.setUsedAt(new Date());
                             data = willAdulterate(data, sourceKey, context, robustnessTestExecution, injectionFault);
                         }
                     }

@@ -30,6 +30,18 @@ def get_by_id(id):
         return errors.http_notfound()
 
 
+@servers_api.route('/<id>/diagnostics', methods=['GET'])
+def get_diagnostics_by_id(id):
+    nova = commons.nova_client(request.args.get('key'))
+    servers = nova.servers.list(search_opts={'id': id})
+    if servers and len(servers):
+        server = servers[0]
+        response, diagnostics = server.diagnostics()
+        return jsonify(diagnostics)
+    else:
+        return errors.http_notfound()
+
+
 @servers_api.route('/', methods=['POST'])
 def post():
     nova = commons.nova_client(request.args.get('key'))

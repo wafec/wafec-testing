@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import wafec.testing.execution.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +22,13 @@ import java.util.stream.Collectors;
 public class SchOutputExtractor {
     @Autowired
     private SchOutputCommandRepository schOutputCommandRepository;
+    @Autowired
+    private TestExecutionInputRepository testExecutionInputRepository;
+    @Autowired
+    private TestExecutionObservedOutputRepository testExecutionObservedOutputRepository;
+    @Autowired
+    private TestOutputRepository testOutputRepository;
+
     private Logger logger = LoggerFactory.getLogger(SchOutputExtractor.class);
 
     public List<SchOutput> execute(SchOutputCommandGroup group) {
@@ -90,9 +98,56 @@ public class SchOutputExtractor {
                 SchOutput schErrorOutput = SchOutput.of(String.format("ERROR source=%s, command=%s, message='%s'",
                         command.getSource(), command.getCommand(), exc.getMessage()), new Date(), "sch-error", false);
                 result.add(schErrorOutput);
+            } catch (Exception exc) {
+                logger.error(exc.getMessage(), exc);
+                SchOutput schExceptionOutput = SchOutput.of(String.format("EXCEPTION source=%s, command=%s, message=%s",
+                        command.getSource(), command.getCommand(), exc.getMessage()), new Date(), "sch-exception", false);
+                result.add(schExceptionOutput);
             }
         }
         logger.info("SCH succeed");
         return result;
+    }
+
+    public void executeAndParse(List<SchOutputCommandGroup> schOutputCommandGroupList, TestExecution testExecution) {
+        if (schOutputCommandGroupList == null || schOutputCommandGroupList.size() == 0)
+            return;
+        var testExecutionInputList = testExecutionInputRepository.findByTestExecutionAndStartedAndEndedAtAreNotNull(testExecution);
+        for (var schOutputCommandGroup : schOutputCommandGroupList) {
+            var result = this.execute(schOutputCommandGroup);
+            for (int i = 0; i < result.size(); i++) {
+                try {
+                    var schOutput = result.get(i);
+
+                    TestOutput testOutput = new TestOutput();
+                    testOutput.setCreatedAt(schOutput.getCreatedAt());
+                    testOutput.setOutput(schOutput.getLine());
+                    testOutput.setSource(schOutput.getSource());
+                    testOutput.setSourceType("sch");
+                    testOutput.setPosition(0);
+
+                    var testExecutionInput = testExecutionInputList
+                            .stream().filter(input -> testOutput.getCreatedAt().after(input.getStartedAt())
+                                    && testOutput.getCreatedAt().before(input.getEndedAt()))
+                            .findFirst().orElse(null);
+
+                    TestInput testInput = null;
+                    if (testExecutionInput != null) {
+                        testInput = testExecutionInput.getTestInput();
+                        int maxPosition = testExecutionObservedOutputRepository.maxPositionByTestExecutionAndTestInput(testExecution, testInput);
+                        testOutput.setPosition(maxPosition + 1);
+                    } else if (schOutput.isIgnoreIfInvalid()) {
+                        continue;
+                    }
+
+                    testOutputRepository.save(testOutput);
+                    TestExecutionObservedOutput testExecutionObservedOutput =
+                            TestExecutionObservedOutput.of(testExecution, testInput, testOutput);
+                    testExecutionObservedOutputRepository.save(testExecutionObservedOutput);
+                } catch (Exception exc) {
+                    logger.error(exc.getMessage(), exc);
+                }
+            }
+        }
     }
 }

@@ -18,4 +18,6 @@ public interface InjectionFaultRepository extends CrudRepository<InjectionFault,
     List<String> findByRobustnessTestExecutionAndNotDiscardDistinctSourceKeyAndContext(RobustnessTestExecution robustnessTestExecution);
     @Query("SELECT if FROM InjectionFault if WHERE if.robustnessTestExecution = ?1 AND if.injectionTarget.sourceKey = ?2")
     List<InjectionFault> findByRobustnessTestExecutionAndSourceKey(RobustnessTestExecution robustnessTestExecution, String sourceKey);
+    @Query("SELECT if FROM InjectionFault if LEFT JOIN FETCH if.injectionTarget LEFT JOIN FETCH if.injectionTargetOperator WHERE if.robustnessTestExecution = ?1")
+    List<InjectionFault> findByRobustnessTestExecution(RobustnessTestExecution robustnessTestExecution);
 }

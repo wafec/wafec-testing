@@ -1,6 +1,7 @@
 from wafec.testing.app.base import BaseCmd
 from wafec.testing.driver.openstack.main import app
 
+
 class Testing(BaseCmd):
     name = 'testing'
 

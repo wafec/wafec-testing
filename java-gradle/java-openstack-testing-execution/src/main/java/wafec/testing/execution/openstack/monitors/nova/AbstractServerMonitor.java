@@ -2,6 +2,7 @@ package wafec.testing.execution.openstack.monitors.nova;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import wafec.testing.core.MapGet;
 import wafec.testing.driver.openstack.client.OpenStackClientException;
 import wafec.testing.driver.openstack.client.Server;
@@ -25,6 +26,10 @@ public abstract class AbstractServerMonitor extends AbstractNovaMonitor {
     private Server last;
 
     Logger logger = LoggerFactory.getLogger(AbstractServerMonitor.class);
+
+    public AbstractServerMonitor() {
+        super();
+    }
 
     @Override
     protected TestDriverMonitorResult monitorInternal(final MapGet mapGet, final TestDriverObservedOutputBuilder builder) throws

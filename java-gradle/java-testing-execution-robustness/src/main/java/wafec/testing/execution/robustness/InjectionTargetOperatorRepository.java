@@ -10,7 +10,7 @@ import java.util.List;
 public interface InjectionTargetOperatorRepository extends CrudRepository<InjectionTargetOperator, Long> {
     @Query("SELECT io FROM InjectionTargetOperator io WHERE io.injectionTarget = ?1")
     List<InjectionTargetOperator> findByInjectionTarget(InjectionTarget injectionTarget);
-    @Query("SELECT io FROM InjectionTargetOperator io WHERE io.injectionTarget.robustnessTest = ?1 AND injectionTarget.sourceKey = ?2")
+    @Query("SELECT io FROM InjectionTargetOperator io WHERE io.injectionTarget.robustnessTest = ?1 AND io.injectionTarget.sourceKey = ?2 AND io.ignored is false")
     List<InjectionTargetOperator> findByRobustnessTestAndSourceKey(RobustnessTest robustnessTest, String sourceKey);
     @Query("SELECT io FROM InjectionTargetOperator io WHERE io.injectionTarget.robustnessTest = ?1 AND io.injectionTarget.sourceKey = ?2 AND io.used is false AND io.ignored is false")
     List<InjectionTargetOperator> findByRobustnessTestAndSourceKeyAndNotUsed(RobustnessTest robustnessTest, String sourceKey);
