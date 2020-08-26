@@ -41,7 +41,7 @@ public abstract class AbstractDefaultTamper implements DataTamper {
         var testExecution = robustnessTestExecution.getTestExecution();
         var importantList = testExecutionInputRepository.findByTestExecutionAndImportant(testExecution);
         if (importantList.size() > 0) {
-            var inUseInputList = testInputRepository.findByTestExecutionAndInUse(testExecution);
+            var inUseInputList = testInputRepository.findByTestExecutionAndStatusIsInUse(testExecution);
             if (inUseInputList.stream().noneMatch(TestInput::isImportant)) {
                 if (debug)
                     logger.debug(String.format("Will ignore '%s.%s'. It is not important.", sourceKey, context));

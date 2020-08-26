@@ -3,7 +3,7 @@ package wafec.testing.execution.app.commandline;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import picocli.CommandLine;
-import wafec.testing.execution.openstack.robustness.analysis.OpenStackResultAnalyzer;
+import wafec.testing.execution.openstack.robustness.analysis.OpenStackRobustnessTestExecutionEvaluator;
 import wafec.testing.execution.robustness.RobustnessTestExecutionRepository;
 
 import java.io.File;
@@ -35,17 +35,11 @@ public class TestingRobustnessOpenStackAnalyze implements Callable<Integer> {
     @Autowired
     RobustnessTestExecutionRepository robustnessTestExecutionRepository;
     @Autowired
-    OpenStackResultAnalyzer openStackResultAnalyzer;
+    OpenStackRobustnessTestExecutionEvaluator robustnessTestExecutionEvaluator;
 
     @Override
     public Integer call() throws Exception {
-        if (composite.byTestExecution != null) {
-            var robustnessTestExecution = robustnessTestExecutionRepository.findById(composite.byTestExecution.robustnessTestExecutionId)
-                    .orElseThrow();
-            var modeledStateNameList = FileUtils.readLines(stateNameListFile).stream().map(String::trim).collect(Collectors.toList());
-            var result = openStackResultAnalyzer.analyzeRobustnessTestExecution(robustnessTestExecution, modeledStateNameList);
-            System.out.println(result.toString());
-        }
+
         return 0;
     }
 }

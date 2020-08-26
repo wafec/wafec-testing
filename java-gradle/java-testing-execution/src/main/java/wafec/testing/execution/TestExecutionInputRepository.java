@@ -15,4 +15,6 @@ public interface TestExecutionInputRepository extends CrudRepository<TestExecuti
     List<TestExecutionInput> findByTestExecution(TestExecution testExecution);
     @Query("SELECT tei FROM TestExecutionInput tei WHERE tei.testExecution = :testExecution AND tei.startedAt IS NOT NULL AND tei.endedAt IS NOT NULL ")
     List<TestExecutionInput> findByTestExecutionAndStartedAndEndedAtAreNotNull(@Param("testExecution") TestExecution testExecution);
+    @Query("SELECT tei FROM TestExecutionInput tei LEFT JOIN FETCH tei.testInput WHERE tei.testExecution = ?1 AND tei.startedAt IS NOT NULL ORDER BY tei.testInput.position")
+    List<TestExecutionInput> findByTestExecutionAndStartedAtIsNotNull(TestExecution testExecution);
 }

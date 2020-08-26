@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import wafec.testing.execution.*;
 import wafec.testing.execution.utils.SchOutputCommandGroup;
-import wafec.testing.execution.utils.SchOutputExtractor;
+import wafec.testing.execution.utils.SchOutputService;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -33,7 +33,7 @@ public abstract class AbstractRobustnessTestRunner {
     @Setter
     protected List<SchOutputCommandGroup> schOutputCommandGroupList;
     @Autowired
-    protected SchOutputExtractor schOutputExtractor;
+    protected SchOutputService schOutputService;
 
     Logger logger = LoggerFactory.getLogger(AbstractRobustnessTestRunner.class);
 
@@ -84,7 +84,7 @@ public abstract class AbstractRobustnessTestRunner {
             throw new RobustnessException(exc.getMessage(), exc);
         } finally {
             dataInterception.turnOff();
-            schOutputExtractor.executeAndParse(schOutputCommandGroupList, robustnessTestExecution.getTestExecution());
+            schOutputService.executeAndParse(schOutputCommandGroupList, robustnessTestExecution.getTestExecution());
             if (environmentController != null) {
                 environmentController.tearDown();
             }

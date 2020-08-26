@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import wafec.testing.execution.utils.SchOutputCommandGroup;
-import wafec.testing.execution.utils.SchOutputExtractor;
+import wafec.testing.execution.utils.SchOutputService;
 
 import java.util.Date;
 import java.util.List;
@@ -27,7 +27,7 @@ public abstract class AbstractTestDriver {
     @Autowired
     private TestExecutionInputRepository testExecutionInputRepository;
     @Autowired
-    private SchOutputExtractor schOutputExtractor;
+    private SchOutputService schOutputService;
 
     protected TestDriverContext testDriverContext;
     @Setter
@@ -79,7 +79,7 @@ public abstract class AbstractTestDriver {
         } catch (EnvironmentException exc) {
             throw new TestDriverException(exc.getMessage(), exc);
         } finally {
-            schOutputExtractor.executeAndParse(schOutputCommandGroupList, testExecution);
+            schOutputService.executeAndParse(schOutputCommandGroupList, testExecution);
             if (environmentController != null) {
                 environmentController.tearDown();
                 testExecution.setEnvironmentController(null);

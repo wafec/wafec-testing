@@ -1,0 +1,11 @@
+package wafec.testing.execution.analysis;
+
+public enum EvaluationTestExecutionStatusTypes {
+    CORRECT_BEHAVIOR,
+    CORRECT_BEHAVIOR_BUT_DIFFERENT_CONTROL_FLOW,
+    INCORRECT_BEHAVIOR_BUT_MANAGED_STATE,
+    INCORRECT_BEHAVIOR_BUT_UNMANAGED_STATE,
+    INCONCLUSIVE,
+    IN_ERROR_STATE,
+    UNSET
+}

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import wafec.testing.execution.*;
 
 import java.io.IOException;
@@ -18,8 +19,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
-public class SchOutputExtractor {
+@Service
+public class SchOutputService {
     @Autowired
     private SchOutputCommandRepository schOutputCommandRepository;
     @Autowired
@@ -29,7 +30,7 @@ public class SchOutputExtractor {
     @Autowired
     private TestOutputRepository testOutputRepository;
 
-    private Logger logger = LoggerFactory.getLogger(SchOutputExtractor.class);
+    private Logger logger = LoggerFactory.getLogger(SchOutputService.class);
 
     public List<SchOutput> execute(SchOutputCommandGroup group) {
         logger.info("Starting getting sch outputs");
@@ -69,7 +70,7 @@ public class SchOutputExtractor {
                     result.addAll(Arrays.stream(buffer.toString().split("\\r?\\n"))
                              .map(l -> SchOutput.of(l,
                                      new Date(),
-                                     Optional.ofNullable(command.getSource()).orElse(SchOutputExtractor.class.getName()),
+                                     Optional.ofNullable(command.getSource()).orElse(SchOutputService.class.getName()),
                                      command.isIgnoreIfInvalid()))
                             .collect(Collectors.toList()));
                 if (!StringUtils.isEmpty(command.getDatePattern())) {
