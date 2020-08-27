@@ -18,5 +18,7 @@ public class EvaluationTestExecutionTraceEntry {
     @ManyToOne
     @JoinColumn(columnDefinition = "test_execution_observed_output_id", referencedColumnName = "id")
     private TestExecutionObservedOutput testExecutionObservedOutput;
+    @Lob
+    @Column(name = "discriminator", length = 56000)
     private String discriminator;
 }

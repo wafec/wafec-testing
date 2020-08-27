@@ -25,4 +25,9 @@ public class EvaluationTestExecution {
     private EvaluationTestExecutionStatus evaluationTestExecutionStatus;
     @Column(name = "generated_at")
     private Date generatedAt;
+
+    public String getResultString() {
+        return String.format("Pass Succeed: %b, With Text Error Present: %b, Status: %s",
+                passSucceed, withTextErrorPresent, evaluationTestExecutionStatus.getEvaluationTestExecutionStatusType());
+    }
 }

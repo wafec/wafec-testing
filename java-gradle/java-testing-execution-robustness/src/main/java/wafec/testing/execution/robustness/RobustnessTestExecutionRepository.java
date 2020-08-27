@@ -17,4 +17,6 @@ public interface RobustnessTestExecutionRepository extends CrudRepository<Robust
     List<RobustnessTestExecution> findByRobustnessTest(RobustnessTest robustnessTest);
     @Query("SELECT rte FROM RobustnessTestExecution rte LEFT JOIN FETCH rte.testExecution WHERE rte.robustnessTest = :robustnessTest AND rte.scan is true ORDER BY rte.id")
     List<RobustnessTestExecution> findByRobustnessTestAndScanIsTrue(@Param("robustnessTest") RobustnessTest robustnessTest);
+    @Query("SELECT rte FROM RobustnessTestExecution rte WHERE rte.testExecution = ?1")
+    RobustnessTestExecution findByTestExecution(TestExecution testExecution);
 }

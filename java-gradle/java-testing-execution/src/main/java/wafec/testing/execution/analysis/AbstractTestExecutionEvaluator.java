@@ -3,6 +3,7 @@ package wafec.testing.execution.analysis;
 import com.google.common.collect.Iterables;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import wafec.testing.execution.TestCaseManagedState;
 import wafec.testing.execution.TestCaseManagedStateRepository;
 import wafec.testing.execution.TestExecution;
@@ -21,6 +22,10 @@ public abstract class AbstractTestExecutionEvaluator {
     protected EvaluationTestExecutionTraceEntryRepository evaluationTestExecutionTraceEntryRepository;
     @Autowired
     protected TestCaseManagedStateRepository testCaseManagedStateRepository;
+    @Autowired
+    protected EvaluationTestExecutionSuiteRepository evaluationTestExecutionSuiteRepository;
+    @Autowired
+    protected EvaluationTestExecutionSuiteResultRepository evaluationTestExecutionSuiteResultRepository;
 
     public EvaluationTestExecution analyze(TestExecution testExecution) {
         final EvaluationTestExecution evaluationTestExecution = new EvaluationTestExecution();
@@ -39,10 +44,12 @@ public abstract class AbstractTestExecutionEvaluator {
                 });
         evaluationTestExecution.setWithTextErrorPresent(withTextErrorPresent);
         evaluationTestExecution.setEvaluationTestExecutionStatus(analyzeAndGetStatus(evaluationTestExecution));
+        evaluationTestExecution.setPassSucceed(analyzeAndGetPassSucceed(evaluationTestExecution));
         evaluationTestExecutionRepository.save(evaluationTestExecution);
         return evaluationTestExecution;
     }
 
+    protected abstract boolean analyzeAndGetPassSucceed(EvaluationTestExecution evaluationTestExecution);
     protected abstract List<EvaluationTestExecutionTrace> findTraces(EvaluationTestExecution evaluationTestExecution);
 
     protected EvaluationTestExecutionStatus analyzeAndGetStatus(EvaluationTestExecution evaluationTestExecution) {
@@ -94,5 +101,29 @@ public abstract class AbstractTestExecutionEvaluator {
             }
         }
         return EvaluationTestExecutionStatus.of(evaluationTestExecution, EvaluationTestExecutionStatusTypes.INCONCLUSIVE, "");
+    }
+
+    @Transactional
+    public EvaluationTestExecutionSuite analyzeAndGetSuite(List<EvaluationTestExecution> evaluationTestExecutionList) {
+        var evaluationTestExecutionSuite = new EvaluationTestExecutionSuite();
+        evaluationTestExecutionSuite.setGeneratedAt(new Date());
+        evaluationTestExecutionSuiteRepository.save(evaluationTestExecutionSuite);
+        for (var evaluationTestExecution : evaluationTestExecutionList) {
+            EvaluationTestExecutionSuiteResult result = evaluationTestExecutionSuiteResultRepository
+                    .findByEvaluationTestExecutionSuiteAndResult(evaluationTestExecutionSuite,
+                            evaluationTestExecution.getResultString());
+            if (result == null) {
+                result = new EvaluationTestExecutionSuiteResult();
+                result.setOccurrenceCount(1);
+                result.setResult(evaluationTestExecution.getResultString());
+                result.setEvaluationTestExecutionSuite(evaluationTestExecutionSuite);
+            } else {
+                result.setOccurrenceCount(result.getOccurrenceCount() + 1);
+            }
+            evaluationTestExecutionSuiteResultRepository.save(result);
+        }
+        evaluationTestExecutionSuite.setEvaluationTestExecutionList(evaluationTestExecutionList);
+        evaluationTestExecutionSuiteRepository.save(evaluationTestExecutionSuite);
+        return evaluationTestExecutionSuite;
     }
 }

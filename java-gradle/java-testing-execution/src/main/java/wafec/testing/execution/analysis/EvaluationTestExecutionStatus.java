@@ -16,6 +16,8 @@ public class EvaluationTestExecutionStatus {
     @Column(name = "status_type")
     @Enumerated
     private EvaluationTestExecutionStatusTypes evaluationTestExecutionStatusType;
+    @Lob
+    @Column(name = "description", length = 56000)
     private String description;
 
     public static EvaluationTestExecutionStatus of(EvaluationTestExecution evaluationTestExecution,

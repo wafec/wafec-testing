@@ -1,6 +1,8 @@
 package wafec.testing.execution.openstack.robustness.analysis;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,10 +17,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
-@Transactional
 public class OpenStackRobustnessTestExecutionEvaluator extends AbstractRobustnessTestExecutionEvaluator {
     @Autowired
     private TestExecutionObservedOutputRepository testExecutionObservedOutputRepository;
@@ -30,15 +33,27 @@ public class OpenStackRobustnessTestExecutionEvaluator extends AbstractRobustnes
     private RobustnessEvaluationTestExecutionRepository robustnessEvaluationTestExecutionRepository;
     @Autowired
     private TestExecutionInputRepository testExecutionInputRepository;
+    @Autowired
+    private RobustnessTestExecutionRepository robustnessTestExecutionRepository;
+
+    Logger logger = LoggerFactory.getLogger(OpenStackRobustnessTestExecutionEvaluator.class);
+
+    @Override
+    protected boolean analyzeAndGetPassSucceed(EvaluationTestExecution evaluationTestExecution) {
+        var testExecutionObservedOutputList =
+                testExecutionObservedOutputRepository.findByTestExecution(evaluationTestExecution.getTestExecution());
+        return testExecutionObservedOutputList.stream().noneMatch(o -> o.getTestOutput() != null &&
+                o.getTestOutput().getSourceType().toLowerCase().equals("error"));
+    }
 
     @Override
     protected List<EvaluationTestExecutionTrace> findTraces(final EvaluationTestExecution evaluationTestExecution) {
-        var robustnessEvaluationTestExecution = robustnessEvaluationTestExecutionRepository.findByEvaluationTestExecution(evaluationTestExecution);
+        var robustnessTestExecution = robustnessTestExecutionRepository.findByTestExecution(evaluationTestExecution.getTestExecution());
         List<EvaluationTestExecutionTrace> evaluationTestExecutionTraceList = new ArrayList<>();
         evaluationTestExecutionTraceList.add(createExecutionTraceByMethods(evaluationTestExecution.getTestExecution(), TestExecutionSourceTypes.TEST));
         evaluationTestExecutionTraceList.add(createExecutionTraceByStates(evaluationTestExecution.getTestExecution(), TestExecutionSourceTypes.TEST));
         evaluationTestExecutionTraceList.add(createFailureTrace(evaluationTestExecution.getTestExecution(), TestExecutionSourceTypes.TEST));
-        var robustnessTestExecutionReference = robustnessTestExecutionService.findRobustnessTestExecutionReference(robustnessEvaluationTestExecution.getRobustnessTestExecution());
+        var robustnessTestExecutionReference = robustnessTestExecutionService.findRobustnessTestExecutionReference(robustnessTestExecution);
         if (robustnessTestExecutionReference != null) {
             evaluationTestExecutionTraceList.add(createExecutionTraceByMethods(robustnessTestExecutionReference.getTestExecution(), TestExecutionSourceTypes.REFERENCE));
             evaluationTestExecutionTraceList.add(createExecutionTraceByStates(robustnessTestExecutionReference.getTestExecution(), TestExecutionSourceTypes.REFERENCE));
@@ -110,13 +125,13 @@ public class OpenStackRobustnessTestExecutionEvaluator extends AbstractRobustnes
         evaluationTestExecutionTrace.setTestExecutionSource(testExecution);
         evaluationTestExecutionTraceRepository.save(evaluationTestExecutionTrace);
 
-        var inputs = testExecutionInputRepository.findByTestExecutionAndStartedAtIsNotNull(testExecution);
+        final var inputs = testExecutionInputRepository.findByTestExecutionAndStartedAtIsNotNull(testExecution);
         if (inputs.size() > 0) {
             var dateStartRef = inputs.get(0).getStartedAt();
             var dateEndRef = testExecution.getEndTime();
-            var importantListOpt = inputs.stream().filter(i -> i.getTestInput().isImportant());
-            if (importantListOpt.count() > 0) {
-                var importantFirst = importantListOpt.min(Comparator.comparing(TestExecutionInput::getStartedAt)).orElseThrow();
+            Supplier<Stream<TestExecutionInput>> importantListSupplier = () -> inputs.stream().filter(i -> i.getTestInput().isImportant());
+            if (importantListSupplier.get().count() > 0) {
+                var importantFirst = importantListSupplier.get().min(Comparator.comparing(TestExecutionInput::getStartedAt)).orElseThrow();
                 dateStartRef = importantFirst.getStartedAt();
             }
             var schObservedOutputList = testExecutionObservedOutputRepository.findByTestExecutionAndSchLogsBetweenSpecificDate(
@@ -124,7 +139,7 @@ public class OpenStackRobustnessTestExecutionEvaluator extends AbstractRobustnes
             );
             final var evaluationTestExecutionTraceEntryList = new ArrayList<EvaluationTestExecutionTraceEntry>();
             schObservedOutputList.stream().filter(o -> StringUtils.isNotEmpty(o.getTestOutput().getOutput()) &&
-                    o.getTestOutput().getOutput().contains("ERROR")).forEach(o -> {
+                    o.getTestOutput().getOutput().toUpperCase().contains(" ERROR ")).forEach(o -> {
                 EvaluationTestExecutionTraceEntry entry = new EvaluationTestExecutionTraceEntry();
                 entry.setTestExecutionObservedOutput(o);
                 entry.setDiscriminator(o.getTestOutput().getOutput());
