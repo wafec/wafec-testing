@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import picocli.CommandLine;
 import wafec.testing.execution.analysis.EvaluationTestExecutionSuite;
 import wafec.testing.execution.analysis.EvaluationTestExecutionSuiteRepository;
+import wafec.testing.execution.analysis.EvaluationTestExecutionSuiteResultTestExecution;
+import wafec.testing.execution.analysis.EvaluationTestExecutionSuiteResultTestExecutionRepository;
 import wafec.testing.execution.openstack.robustness.analysis.OpenStackRobustnessEvaluationPresenter;
 import wafec.testing.execution.openstack.robustness.analysis.OpenStackRobustnessTestExecutionEvaluator;
 import wafec.testing.execution.robustness.RobustnessTestExecutionRepository;
@@ -21,6 +23,10 @@ public class TestingRobustnessOpenStackAnalyze implements Callable<Integer> {
     Composite composite;
     @CommandLine.Option(names = { "-d", "--data" })
     boolean data;
+    @CommandLine.Option(names = { "-x", "--expanded" })
+    boolean expanded;
+    @CommandLine.Option(names = { "-f", "--filter" })
+    String filter;
 
     static class Composite {
         @CommandLine.ArgGroup(exclusive = false)
@@ -69,14 +75,14 @@ public class TestingRobustnessOpenStackAnalyze implements Callable<Integer> {
                 suite = evaluationTestExecutionSuiteRepository.findById(composite.byTest.id).orElseThrow();
             } else {
                 var robustnessTest = robustnessTestRepository.findById(composite.byTest.id).orElseThrow();
-                var robustnessTestExecutionList = robustnessTestExecutionRepository.findByRobustnessTest(robustnessTest);
+                var robustnessTestExecutionList = robustnessTestExecutionRepository.findByRobustnessTestAndScanIsFalse(robustnessTest);
                 var evaluationList = new ArrayList<RobustnessEvaluationTestExecution>();
                 int count = 1;
                 for (var robustnessTestExecution : robustnessTestExecutionList) {
                     var evaluation = robustnessTestExecutionEvaluator.analyze(robustnessTestExecution);
                     evaluationList.add(evaluation);
                     System.out.println(String.format("  Evaluation %d did return [%d/%d]", evaluation.getId(),
-                            count++, evaluationList.size()));
+                            count++, robustnessTestExecutionList.size()));
                 }
                 suite = robustnessTestExecutionEvaluator.analyzeAndGetSuite(evaluationList
                         .stream()
@@ -84,7 +90,7 @@ public class TestingRobustnessOpenStackAnalyze implements Callable<Integer> {
                         .collect(Collectors.toList())
                 );
             }
-            openStackRobustnessEvaluationPresenter.printResultsFor(suite);
+            openStackRobustnessEvaluationPresenter.printResultsFor(suite, expanded, filter);
         }
         return 0;
     }

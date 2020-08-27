@@ -8,9 +8,7 @@ import wafec.testing.execution.TestCaseManagedState;
 import wafec.testing.execution.TestCaseManagedStateRepository;
 import wafec.testing.execution.TestExecution;
 
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class AbstractTestExecutionEvaluator {
@@ -26,6 +24,8 @@ public abstract class AbstractTestExecutionEvaluator {
     protected EvaluationTestExecutionSuiteRepository evaluationTestExecutionSuiteRepository;
     @Autowired
     protected EvaluationTestExecutionSuiteResultRepository evaluationTestExecutionSuiteResultRepository;
+    @Autowired
+    EvaluationTestExecutionSuiteResultTestExecutionRepository evaluationTestExecutionSuiteResultTestExecutionRepository;
 
     public EvaluationTestExecution analyze(TestExecution testExecution) {
         final EvaluationTestExecution evaluationTestExecution = new EvaluationTestExecution();
@@ -121,6 +121,11 @@ public abstract class AbstractTestExecutionEvaluator {
                 result.setOccurrenceCount(result.getOccurrenceCount() + 1);
             }
             evaluationTestExecutionSuiteResultRepository.save(result);
+
+            var evaluationTestExecutionSuiteResultTestExecution = new EvaluationTestExecutionSuiteResultTestExecution();
+            evaluationTestExecutionSuiteResultTestExecution.setEvaluationTestExecution(evaluationTestExecution);
+            evaluationTestExecutionSuiteResultTestExecution.setEvaluationTestExecutionSuiteResult(result);
+            evaluationTestExecutionSuiteResultTestExecutionRepository.save(evaluationTestExecutionSuiteResultTestExecution);
         }
         evaluationTestExecutionSuite.setEvaluationTestExecutionList(evaluationTestExecutionList);
         evaluationTestExecutionSuiteRepository.save(evaluationTestExecutionSuite);
