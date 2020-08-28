@@ -131,6 +131,14 @@ def resume(id):
     return jsonify(success=True)
 
 
+@servers_api.route('/<id>/actions/rebuild', methods=['POST'])
+def rebuild(id):
+    nova = commons.nova_client(request.args.get('key'))
+    server = nova.servers.find(id=id)
+    server.rebuild(image=request.json['id'])
+    return jsonify(success=True)
+
+
 @servers_api.route('/<id>/actions/resize', methods=['POST'])
 def resize(id):
     nova = commons.nova_client(request.args.get('key'))

@@ -1,6 +1,7 @@
 package wafec.testing.driver.openstack.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,4 +34,6 @@ public interface ServerClient extends CustomOpenStackCrudClient<Server> {
     void liveMigrate(@RequestParam("key") String key, @PathVariable("id") String id, @RequestParam("host") String host);
     @RequestMapping(value = "/{id}/migrate/hosts", method = RequestMethod.GET)
     List<String> migrateHosts(@RequestParam("key") String key, @PathVariable("id") String id);
+    @RequestMapping(value = "/{id}/actions/rebuild", method = RequestMethod.POST, consumes = "application/json")
+    void rebuild(@RequestParam("key") String key, @PathVariable("id") String id, @RequestBody Resource image);
 }

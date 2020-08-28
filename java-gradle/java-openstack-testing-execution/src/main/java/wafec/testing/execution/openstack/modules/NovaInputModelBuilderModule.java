@@ -1,5 +1,6 @@
 package wafec.testing.execution.openstack.modules;
 
+import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import wafec.testing.core.MapGet;
@@ -60,6 +61,8 @@ public class NovaInputModelBuilderModule extends TestDriverInputModelBuilderModu
     private ServerMigrateMonitor serverMigrateMonitor;
     @Autowired
     private ServerLiveMigrateMonitor serverLiveMigrateMonitor;
+    @Autowired
+    private ServerRebuildMonitor serverRebuildMonitor;
 
     @Override
     protected void configure(TestDriverInputModelBuilder builder) {
@@ -80,7 +83,8 @@ public class NovaInputModelBuilderModule extends TestDriverInputModelBuilderModu
                 .map("serverResizeConfirm", this::serverResizeConfirm)
                 .map("serverResizeRevert", this::serverResizeRevert)
                 .map("serverMigrate", this::serverMigrate)
-                .map("serverLiveMigrate", this::serverLiveMigrate);
+                .map("serverLiveMigrate", this::serverLiveMigrate)
+                .map("serverRebuild", this::serverRebuild);
     }
 
     @PreCondition(target = PreCondition.SECURED)
@@ -230,6 +234,20 @@ public class NovaInputModelBuilderModule extends TestDriverInputModelBuilderModu
             TestDataValueNotFoundException, TestDriverException {
         final var key = TestDriverContextUtils.getKey(handler);
         return serverAction(handler, serverStartMonitor, "serverStart", (server) -> serverClient.start(key, server.getId()));
+    }
+
+    @PreCondition(target = PreCondition.SECURED)
+    private List<TestDriverObservedOutput> serverRebuild(TestDriverInputFunctionHandler handler) throws
+            TestDataValueNotFoundException, TestDriverException {
+        final var key = TestDriverContextUtils.getKey(handler);
+        return serverAction(handler, serverRebuildMonitor, "serverRebuild", (server) -> {
+            var imageName = handler.getTestData().getValue("image");
+            var imageList = imageClient.findByName(key, imageName);
+            if (imageList == null || imageList.size() == 0)
+                throw new ResourceNotFoundException(String.format("Image %s not found", imageName));
+            var image = imageList.get(0);
+            serverClient.rebuild(key, server.getId(), Resource.of(image.getId()));
+        });
     }
 
     @PreCondition(target = PreCondition.SECURED)

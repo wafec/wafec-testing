@@ -5,7 +5,9 @@ import lombok.Data;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "TEST_CASE_MANAGED_STATE")
+@Table(name = "TEST_CASE_MANAGED_STATE", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "test_case_id", "name" })
+})
 @Data
 public class TestCaseManagedState {
     @Id
